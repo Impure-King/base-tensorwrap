@@ -1,0 +1,15 @@
+LICENSE
+README.md
+setup.py
+tensorwrap/__init__.py
+tensorwrap/self.py
+tensorwrap/utils.py
+tensorwrap/version.py
+tensorwrap.egg-info/PKG-INFO
+tensorwrap.egg-info/SOURCES.txt
+tensorwrap.egg-info/dependency_links.txt
+tensorwrap.egg-info/not-zip-safe
+tensorwrap.egg-info/requires.txt
+tensorwrap.egg-info/top_level.txt
+tensorwrap/core/__init__.py
+tensorwrap/core/nn/__init__.py

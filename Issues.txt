@@ -6,6 +6,10 @@ The initializers are not effective, since JAX doesn't support initialization.
 
 There are missing initializers that are required for the Dense layer.
 
-2. tensorwrap.nn.layers.Layer
+3. tensorwrap.nn.layers.Layer
 
 Needed to create a subclass for the Dense layer.
+
+4. tensorwrap.utils
+
+Broken exporter that needs to be fixed.

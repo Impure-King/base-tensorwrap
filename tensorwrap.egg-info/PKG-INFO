@@ -1,0 +1,19 @@
+Metadata-Version: 2.1
+Name: tensorwrap
+Version: 0.1.0
+Summary: TensorWrap: A high level TensorFlow wrapper for JAX.
+Home-page: https://github.com/google/flax
+Author: Lelouch
+Author-email: ImpureK@gmail.com
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.10.8
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Description-Content-Type: text/markdown
+Provides-Extra: testing
+License-File: LICENSE
+
+# TensorWrap
+ A Jax-based wrapper that is supposed to give a familiar interface for TensorFlow users.
