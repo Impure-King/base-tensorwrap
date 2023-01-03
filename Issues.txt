@@ -1,0 +1,11 @@
+1. tensorwrap.self.add_weight
+
+The initializers are not effective, since JAX doesn't support initialization.
+
+2. tensorwrap.nn.initializers
+
+There are missing initializers that are required for the Dense layer.
+
+2. tensorwrap.nn.layers.Layer
+
+Needed to create a subclass for the Dense layer.
