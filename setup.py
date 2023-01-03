@@ -10,6 +10,11 @@ try:
 except OSError:
   README = ""
 
+__version__ = None
+
+with open("tensorwrap/version.py") as f:
+  exec(f.read(), globals())
+
 install_requires = [
     "numpy>=1.12",
     "jax>=0.3.16",
@@ -44,11 +49,6 @@ tests_require = [
     "torch",
 ]
 
-__version__ = None
-
-with open("tensorwrap/version.py") as f:
-  exec(f.read(), globals())
-
 setup(
     name="tensorwrap",
     version=__version__,
@@ -57,18 +57,16 @@ setup(
     long_description_content_type="text/markdown",
     classifiers=[
         "Development Status :: 3 - Alpha",
-        "Intended Audience :: Developers",
+        "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
-        "License :: MIT License",
-        "Programming Language :: Python :: 3.10.8",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         ],
     keywords="",
     author="Lelouch",
     author_email="ImpureK@gmail.com",
-    url="https://github.com/google/flax",
+    url="https://github.com/Impure-King/base-tensorwrap",
     packages=find_packages(),
-    package_data={"flax": ["py.typed"]},
     zip_safe=False,
     install_requires=install_requires,
     extras_require={
