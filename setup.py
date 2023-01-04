@@ -19,13 +19,7 @@ install_requires = [
     "numpy>=1.12",
     "jax>=0.3.16",
     "matplotlib",  # only needed for tensorboard export
-    "msgpack",
-    "optax",
-    "orbax",
-    "tensorstore",
-    "rich>=11.1",
-    "typing_extensions>=4.1.1",
-    "PyYAML>=5.4.1",
+    "pandas"
 ]
 
 tests_require = [
