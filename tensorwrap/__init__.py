@@ -1,8 +1,8 @@
 '''TensorWrap API'''
 
 from . import core
-from . import self
-from . import utils
+from . import modules
+from . import util
 
 # Don't remove:
 from .version import __version__
