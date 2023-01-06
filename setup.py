@@ -18,8 +18,10 @@ with open("tensorwrap/version.py") as f:
 install_requires = [
     "numpy>=1.12",
     "jax>=0.3.16",
+    "jaxlib",
     "matplotlib",  # only needed for tensorboard export
-    "pandas"
+    "pandas",
+    "termcolor"
 ]
 
 tests_require = [

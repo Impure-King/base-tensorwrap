@@ -8,8 +8,11 @@ There are missing initializers that are required for the Dense layer.
 
 3. tensorwrap.nn.layers.Layer
 
-Needed to create a subclass for the Dense layer.
+Attempt to create easily accessible functions that can be used across all different
 
 4. tensorwrap.utils
 
 Broken exporter that needs to be fixed.
+
+5. Create a function that will automatically compile and run all the functions.
+
