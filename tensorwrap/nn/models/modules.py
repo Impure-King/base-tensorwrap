@@ -2,12 +2,11 @@ from jax import tree_util
 import jax
 from functools import partial
 
-@tree_util.register_pytree_node_class
+
 class Module:
     """ A Module is the base class for all neuralnet objects. Enter any keyword argument
     and it will unpack and it will create new attributes in self."""
 
-    dynamics = False
     def __init__(self, **var):
 
         # Getting Variables:
@@ -15,25 +14,19 @@ class Module:
         for keys in var:
             setattr(self, keys, var[keys])
 
-    if dynamics:
-        def tree_flatten(self):
-            children = []
-            for keys in self.dict:
-                children.append(self.dict[keys])
-            aux_data = {"dynamic": self.dynamic}
-            return (children, aux_data)
-    
-    else:
-        def tree_flatten(self):
-            children = []
-            aux_data = self.dict # All the static variables
-            return (children, aux_data)
+    def tree_flatten(self):
+        children = []
+        for keys in self.dict:
+            children.append(self.dict[keys])
+        aux_data = {"dynamic": self.dynamic}
+        return (children, aux_data)
+
 
     @classmethod
     def tree_unflatten(cls, aux_data, children):
         return cls(*children, **aux_data)
 
-@tree_util.register_pytree_node_class
+
 class Model(Module):
     """Base neural network Model. It is a named character to train and evaluate all the layers.
 """
@@ -62,7 +55,6 @@ class Model(Module):
         for layer in self.layers:
             layer.build([1])
     
-    @partial(jax.jit, static_argnums = 0)
     def train_step(self, y_true, y_pred):
         derivative_fn = jax.grad(self.loss_fn)
         self.optimizer.compute_grads(derivative_fn, y_true, y_pred)

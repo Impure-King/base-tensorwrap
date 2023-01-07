@@ -20,7 +20,6 @@ class Layer(md.Module):
         self.bias = weights[1]
 
 
-@jax.tree_util.register_pytree_node_class
 class Dense(Layer):
     """A Dense layer is a layer where all the nuerons are fully connected and then transformed, through matrix multiplication."""
     def __init__(self, 
@@ -38,28 +37,16 @@ class Dense(Layer):
         # Uncomment once activation page is started:
         # self.activation = activations.get(activation)
     
+    def unit(self):
+        return self.units
 
     def build(self, shape):
         self.kernel = tf.add_weight(self, shape = [shape[-1], self.units])
         self.bias = tf.add_weight(self, initializer = self.bias_initializer, shape = [self.units])
         super().build()
     
-    @jax.jit
     def __call__(self, inputs):
-        if self.dynamic == True:
-            with jax.disable_jit():
-                if not self.built:
-                    Dense.build(self, inputs.shape)
-                out = jnp.matmul(inputs, self.kernel) + self.bias
-                # Uncomment and replace once the activations are completed.
-                # return self.activation(out)
-            return out
-        elif not self.dynamic:
-            if not self.built:
-                Dense.build(self, inputs.shape)
-            out = jnp.matmul(inputs, self.kernel) + self.bias
-            # Uncomment and replace once the activations are completed.
-            # return self.activation(out)
-            return jnp.array(out)
-        else:
-            raise ValueError("Dynamic is incorrectly specified. Acceptable terms are None, True, or False.")
+        out = jnp.matmul(inputs, self.kernel) + self.bias
+        # Uncomment and replace once the activations are completed.
+        # return self.activation(out)
+        return jnp.squeeze(out)
