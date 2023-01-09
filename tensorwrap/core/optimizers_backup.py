@@ -4,7 +4,6 @@ from tensorwrap.nn.models.modules import Module
 import jax
 
 
-@jax.tree_util.register_pytree_node_class
 class Optimizer(Module):
     def apply_gradients(self, weights):
         weights -= self.grads * self.eta

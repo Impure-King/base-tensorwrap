@@ -17,7 +17,7 @@ from tensorwrap.core.tensors import expand_dims
 from tensorwrap.core.tensors import range
 
 # Jax method conversion:
-import jax.numpy as jnp
+from jax import numpy
 from jax.numpy import float32
 from jax.numpy import array as Variable
 from jax.numpy import absolute

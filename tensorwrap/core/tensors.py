@@ -4,7 +4,7 @@ from functools import partial
 
 
 
-@partial(jit, static_argnums = 1)
+
 def expand_dims(tensor, axis = None, dtype = 'float32'):
     """Used to add an extra dimension at the end of the tensor, along different axis."""
     if tensor == None:
