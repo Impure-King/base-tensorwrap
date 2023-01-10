@@ -5,7 +5,6 @@
 
 # JAX: Autograd and XLA
 
-![Continuous integration](https://github.com/google/jax/actions/workflows/ci-build.yaml/badge.svg)
 ![PyPI version](https://img.shields.io/pypi/v/jax)
 
 [**Quickstart**](#quickstart-colab-in-the-cloud)
@@ -16,47 +15,20 @@
 | [**Reference docs**](https://jax.readthedocs.io/en/latest/)
 
 
-## What is JAX?
+## What is TensorWrap?
 
-JAX is [Autograd](https://github.com/hips/autograd) and [XLA](https://www.tensorflow.org/xla),
-brought together for high-performance machine learning research.
+TensorWrap is high performance neural network library that acts as a wrapper around [JAX](https://github.com/google/jax) (another high performance machine learning library), bringing the familiar feel of the [TensorFlow](https://tensorflow.org) (2.10) for users.
 
-With its updated version of [Autograd](https://github.com/hips/autograd),
-JAX can automatically differentiate native
-Python and NumPy functions. It can differentiate through loops, branches,
-recursion, and closures, and it can take derivatives of derivatives of
-derivatives. It supports reverse-mode differentiation (a.k.a. backpropagation)
-via [`grad`](#automatic-differentiation-with-grad) as well as forward-mode differentiation,
-and the two can be composed arbitrarily to any order.
+TensorWrap works by creating a layer of abstraction over JAX's low level api and introducing TensorFlow + Keras component's while supporting Autograd.
 
-What’s new is that JAX uses [XLA](https://www.tensorflow.org/xla)
-to compile and run your NumPy programs on GPUs and TPUs. Compilation happens
-under the hood by default, with library calls getting just-in-time compiled and
-executed. But JAX also lets you just-in-time compile your own Python functions
-into XLA-optimized kernels using a one-function API,
-[`jit`](#compilation-with-jit). Compilation and automatic differentiation can be
-composed arbitrarily, so you can express sophisticated algorithms and get
-maximal performance without leaving Python. You can even program multiple GPUs
-or TPU cores at once using [`pmap`](#spmd-programming-with-pmap), and
-differentiate through the whole thing.
-
-Dig a little deeper, and you'll see that JAX is really an extensible system for
-[composable function transformations](#transformations). Both
-[`grad`](#automatic-differentiation-with-grad) and [`jit`](#compilation-with-jit)
-are instances of such transformations. Others are
-[`vmap`](#auto-vectorization-with-vmap) for automatic vectorization and
-[`pmap`](#spmd-programming-with-pmap) for single-program multiple-data (SPMD)
-parallel programming of multiple accelerators, with more to come.
-
-This is a research project, not an official Google product. Expect bugs and
-[sharp edges](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html).
+This is a personal project, not professionally affliated with Google in anyway. Expect bugs and several incompatibilities/difference from the original libraries.
 Please help by trying it out, [reporting
-bugs](https://github.com/google/jax/issues), and letting us know what you
+bugs](https://github.com/Impure-King/base-tensorwrap/issues), and letting us know what you
 think!
 
 ```python
-import jax.numpy as jnp
-from jax import grad, jit, vmap
+import tensorwrap as tf
+from tensorwrap import jnp
 
 def predict(params, inputs):
   for W, b in params:
