@@ -1,6 +1,6 @@
 """ TensorWrap's evergrowing prebuilt optimizers. """
 
-from tensorwrap.nn.models.modules import Module
+from tensorwrap.keras.models.modules import Module
 import jax
 
 

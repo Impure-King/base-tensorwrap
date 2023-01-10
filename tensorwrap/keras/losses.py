@@ -2,7 +2,7 @@
 
 import jax
 from jax import numpy as jnp
-from tensorwrap.nn.models import Module
+from tensorwrap.keras.models import Module
 from jax import jit
 from functools import partial
 
