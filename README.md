@@ -3,7 +3,7 @@
 <img src="https://raw.githubusercontent.com/google/jax/main/images/jax_logo_250px.png" alt="logo"></img>
 </div>
 
-# JAX: Autograd and XLA
+# TensorWrap - Integration of the Big Three
 
 ![PyPI version](https://img.shields.io/pypi/v/tensorwrap)
 
@@ -12,9 +12,9 @@
 
 ## What is TensorWrap?
 
-TensorWrap is high performance neural network library that acts as a wrapper around [JAX](https://github.com/google/jax) (another high performance machine learning library), bringing the familiar feel of the [TensorFlow](https://tensorflow.org) (2.10) for users.
+TensorWrap is high performance neural network library that acts as a wrapper around [JAX](https://github.com/google/jax) (another high performance machine learning library), bringing the familiar feel of the [TensorFlow](https://tensorflow.org) (2.x.x) and [PyTorch](https://pytorch.org) (1.x.x) for users.
 
-TensorWrap works by creating a layer of abstraction over JAX's low level api and introducing TensorFlow + Keras component's while supporting Autograd.
+TensorWrap works by creating a layer of abstraction over JAX's low level api and introducing TensorFlow + PyTorch component's while supporting Autograd.
 
 This is a personal project, not professionally affliated with Google in anyway. Expect bugs and several incompatibilities/difference from the original libraries.
 Please help by trying it out, [reporting
@@ -24,6 +24,7 @@ think!
 ```python
 import tensorwrap as tf
 from tensorwrap import jnp
+from tensorwrap import torch
 
 def predict(params, inputs):
   for W, b in params:
@@ -40,12 +41,15 @@ perex_grads = jit(vmap(grad_loss, in_axes=(None, 0, 0)))  # fast per-example gra
 ```
 
 ### Contents
-* [Current gimmicks](#current-gotchas)
+* [Current gimmicks](#current-gimmicks)
 * [Installation](#installation)
 * [Neural net libraries](#neural-network-libraries)
 * [Citations](#citations)
 * [Reference documentation](#reference-documentation)
 
+## Current Gimmicks
+
+Current models are all compiled by JAX's internal jit, so it won't be possible to view the actual internals of models, especially if it is a Sequential or Functional equations.
 
 ### Installation
 
@@ -64,11 +68,6 @@ On Linux, it is often necessary to first update `pip` to a version that supports
 **Note**
 
 The next section is from the JAX installation page, which further details the installation of the GPU and TPU aspects. Therefore, it won't be needed most of the time.
-
-However, in case of the library crashing on load and you are a conda user, please add the command:
-```bash
-mamba install cudatoolkit cudnn -c conda-forge -c nvidia
-```
 
 ### GPU Cuda Installation Info
 

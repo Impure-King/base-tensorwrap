@@ -7,6 +7,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # Importing necessary requirements:
 from . import core
 from . import keras
+from . import torch as pt
 import jax
 
 # Extra path shorteners:

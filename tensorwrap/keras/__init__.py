@@ -1,4 +1,4 @@
-"""TensorWraps Neural Network Wrapper"""
+"""TensorFlow API"""
 
 from . import layers
 from . import optimizers
