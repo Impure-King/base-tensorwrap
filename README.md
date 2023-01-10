@@ -47,7 +47,7 @@ perex_grads = jit(vmap(grad_loss, in_axes=(None, 0, 0)))  # fast per-example gra
 * [Reference documentation](#reference-documentation)
 
 
-### pip installation: TensorWrap
+### Installation
 
 The device installation of TensorWrap depends on it's backend, being JAX. Thus, our normal install will be covering both the GPU and CPU installation.
 
