@@ -55,7 +55,7 @@ setup(
         "Development Status :: PreAlpha",
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         ],
     keywords="",
