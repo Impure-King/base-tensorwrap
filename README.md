@@ -1,6 +1,6 @@
 # TensorWrap
 <div align="center">
-<img src="https://raw.githubusercontent.com/google/jax/main/images/jax_logo_250px.png" alt="logo"></img>
+<img src="https://github.com/Impure-King/base-tensorwrap/blob/1efe03a7d94d38fb3b4d8491ccf5259180eeb6d1/Images/TensorWrap.gif" alt="logo"></img>
 </div>
 
 # TensorWrap - Integration of the Big Three
