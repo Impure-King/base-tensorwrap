@@ -20,7 +20,10 @@ class Module(metaclass=ABCMeta):
         for keys in kwargs:
             setattr(self, keys, kwargs[keys])
 
-    def tree_flatten(self, x, y):
+    def tree_flatten(self):
+        tuple = []
+        for key in self.dict:
+            tuple.append(dict[])
         return ((x, y), None)
 
     @classmethod
