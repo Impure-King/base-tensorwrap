@@ -1,7 +1,6 @@
 # TensorWrap
-<div align="center">
-<img src="https://github.com/Impure-King/base-tensorwrap/blob/1efe03a7d94d38fb3b4d8491ccf5259180eeb6d1/Images/TensorWrap.gif" alt="logo"></img>
-</div>
+
+![](https://github.com/Impure-King/base-tensorwrap/blob/CPU-Version/Images/TensorWrap.gif)
 
 # TensorWrap - Integration of the Big Three
 
@@ -16,7 +15,7 @@ TensorWrap is high performance neural network library that acts as a wrapper aro
 
 TensorWrap works by creating a layer of abstraction over JAX's low level api and introducing TensorFlow + PyTorch component's while supporting Autograd.
 
-This is a personal project, not professionally affliated with Google in anyway. Expect bugs and several incompatibilities/difference from the original libraries.
+This is a personal project, not professionally affliated with Google in any way. Expect bugs and several incompatibilities/difference from the original libraries.
 Please help by trying it out, [reporting
 bugs](https://github.com/Impure-King/base-tensorwrap/issues), and letting us know what you
 think!

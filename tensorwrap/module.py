@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
+from jax.tree_util import register_pytree_node_class
 
 
+@register_pytree_node_class
 class Module(metaclass=ABCMeta):
     """This is the base class for all types of functions and components.
     This is going to be a static type component, in order to allow jit.compile
@@ -17,3 +19,10 @@ class Module(metaclass=ABCMeta):
     def __call__(self, *args, **kwargs):
         for keys in kwargs:
             setattr(self, keys, kwargs[keys])
+
+    def tree_flatten(self, x, y):
+        return ((x, y), None)
+
+    @classmethod
+    def tree_unflatten(cls, aux_data, children):
+        return cls(*children)
