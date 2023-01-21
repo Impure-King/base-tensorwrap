@@ -21,7 +21,7 @@ install_requires = [
     "jaxlib",
     "matplotlib",  # only needed for tensorboard export
     "pandas",
-    "termcolor"
+    "jaxtyping"
 ]
 
 tests_require = [

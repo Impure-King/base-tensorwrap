@@ -9,8 +9,9 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # Library Paths:
 from tensorwrap import keras
+from tensorwrap import module
 
-# Path Shorteners:
+# Path Shortener:
 from tensorwrap.module import Module
 
 # JAX Built-ins:
