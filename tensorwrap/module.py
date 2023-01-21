@@ -2,6 +2,10 @@ from abc import ABCMeta, abstractmethod
 from jax.tree_util import register_pytree_node_class
 
 
+class Module_Base(metaclass=ABCMeta):
+    def __init__(self, *args, **kwargs):
+        for keys in args:
+            setattr()
 @register_pytree_node_class
 class Module(metaclass=ABCMeta):
     """This is the base class for all types of functions and components.
@@ -10,8 +14,6 @@ class Module(metaclass=ABCMeta):
 
     @abstractmethod
     def __init__(self, **kwargs):
-        self.dict = kwargs
-
         for keys in dict:
             setattr(self, keys, dict[keys])
 
