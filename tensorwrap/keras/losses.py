@@ -1,4 +1,4 @@
-from tensorwrap import Module
+from tensorwrap.module import Module
 
 
 class Loss(Module):

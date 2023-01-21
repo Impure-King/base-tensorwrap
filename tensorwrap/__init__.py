@@ -11,6 +11,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorwrap import keras
 from tensorwrap import module
 from tensorwrap import test
+from tensorwrap import config
 
 # Path Shortener:
 from tensorwrap.module import Module

@@ -11,8 +11,13 @@ class Layer(Module):
     """A base layer class that is used to create new JIT enabled layers.
        Acts as the subclass for all layers, to ensure that they are converted in PyTrees."""
 
-    def __init__(self, trainable=True, dtype=None, dynamic=False, **kwargs) -> None:
-        super().__init__(self, trainable=trainable, dtype=dtype, dynamic=dynamic, **kwargs)
+    # Removing initializer due to a bug:
+    def __init__(self, trainable=True, dtype=None, dynamic=not is_gpu_available(), **kwargs) -> None:
+        self.trainable = trainable
+        self.dtype = dtype
+        self.dynamic = dynamic
+        self.kwargs = kwargs
+        self.built = False
 
     def add_weights(self, shape=None, initializer='glorot_uniform', trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
@@ -40,15 +45,18 @@ class Layer(Module):
         self.built = True
 
     def call(self):
+        # Must be defined to satisfy arbitrary method.
         pass
 
-    def __call__(self, inputs, static=is_gpu_available()):
+    def __call__(self, inputs):
+        # This will be called when called normally.
         if not self.built:
             self.build(inputs.shape)
-        if static:
+        if not self.dynamic:
             function = jit(self.call)
         else:
             function = self.call
+        # Ensures a tensorflow-like API by calling the call function inside __call__.
         out = function(inputs)
         return out
 
@@ -65,18 +73,18 @@ class Dense(Layer):
                  activity_regularizer=None,
                  kernel_constraint=None,
                  bias_constraint=None,
+                 *args,
                  **kwargs):
-        super().__init__(units=units,
-                         activation=activation,
-                         use_bias=use_bias,
-                         kernel_initializer=kernel_initializer,
-                         bias_initializer=bias_initializer,
-                         kernel_regularizer=kernel_regularizer,
-                         bias_regularizer=bias_regularizer,
-                         activity_regularizer=activity_regularizer,
-                         kernel_constraint=kernel_constraint,
-                         bias_constraint=bias_constraint,
-                         **kwargs)
+        super(Module, self).__init__(units=units,
+                                     activation=activation,
+                                     use_bias=use_bias,
+                                     kernel_initializer=kernel_initializer,
+                                     bias_initializer=bias_initializer,
+                                     kernel_regularizer=kernel_regularizer,
+                                     bias_regularizer=bias_regularizer,
+                                     activity_regularizer=activity_regularizer,
+                                     kernel_constraint=kernel_constraint,
+                                     bias_constraint=bias_constraint)
         self.built = False
 
     def build(self, input_shape):
@@ -87,5 +95,8 @@ class Dense(Layer):
                                      initializer=self.bias_initializer)
 
     def call(self, inputs: Array) -> Array:
-        return jnp.matmul(self.kernel, inputs) + self.bias
+        if self.use_bias == True:
+            return jnp.matmul(self.kernel, inputs) + self.bias
+        else:
+            return jnp.matmul(self.kernel, inputs)
 
