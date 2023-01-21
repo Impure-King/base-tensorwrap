@@ -19,7 +19,7 @@ class BaseModule:
         register_pytree_node_class(cls)
 
 
-@register_pytree_node_class
+
 class Module(BaseModule, metaclass=ABCMeta):
     """This is the base class for all types of functions and components.
     This is going to be a static type component, in order to allow jit.compile
@@ -38,7 +38,7 @@ class Module(BaseModule, metaclass=ABCMeta):
         return cls(*children)
 
     @abstractmethod
-    def __call__(self, *args, **kwargs):
+    def call(self, *args, **kwargs):
         pass
 
 

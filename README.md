@@ -20,39 +20,61 @@ Please help by trying it out, [reporting
 bugs](https://github.com/Impure-King/base-tensorwrap/issues), and letting us know what you
 think!
 
-```python
-import tensorwrap as tf
-from tensorwrap import jnp
-from tensorwrap import torch
-
-def predict(params, inputs):
-  for W, b in params:
-    outputs = jnp.dot(inputs, W) + b
-    inputs = jnp.tanh(outputs)  # inputs to the next layer
-  return outputs                # no activation on last layer
-
-def loss(params, inputs, targets):
-  preds = predict(params, inputs)
-  return jnp.sum((preds - targets)**2)
-
-grad_loss = jit(grad(loss))  # compiled gradient evaluation function
-perex_grads = jit(vmap(grad_loss, in_axes=(None, 0, 0)))  # fast per-example grads
-```
-
 ### Contents
+* [Examples](#Examples)
 * [Current gimmicks](#current-gimmicks)
 * [Installation](#installation)
 * [Neural net libraries](#neural-network-libraries)
 * [Citations](#citations)
 * [Reference documentation](#reference-documentation)
 
-## Current Gimmicks
 
-Current models are all compiled by JAX's internal jit, so it won't be possible to view the actual internals of models, especially if it is a Sequential or Functional equations.
+### Examples
+
+1) Custom Layers
+```python
+import tensorwrap as tf
+from tensorwrap import keras
+
+class Dense(keras.layers.Layer):
+    def __init__(self, units) -> None:
+        super().__init__()
+        self.units = units # Defining the output shape.
+  
+    def build(self, input_shape: tuple) -> None:
+        super().build(input_shape) # Needed to check dimensions and build.
+        self.kernel = self.add_weights([input_shape[-1], self.units],
+                                       activation = 'glorot_uniform')
+        self.bias = self.add_weights([self.units],
+                                     activation = 'zeros')
+    
+    # Use call not __call__ to define the flow. No tf.function needed either.
+    def call(self, inputs):
+        return inputs @ self.kernel + self.bias
+```
+
+2) Custom Losses
+```python
+import tensorwrap as tf
+from tensorwrap import keras
+
+class MSE(keras.losses.Loss):
+    def __init__(self):
+        pass
+```
+
+
+
+### Current Gimmicks
+1. Current models are all compiled by JAX's internal jit, so it won't be possible to view the actual internals of models, especially if it is a Sequential or Functional equations.
+
+2. Also, using Module is currently not recommended, since other superclasses offer more functionality and ease of use.
+
+
 
 ### Installation
 
-The device installation of TensorWrap depends on it's backend, being JAX. Thus, our normal install will be covering both the GPU and CPU installation.
+The device installation of TensorWrap depends on its backend, being JAX. Thus, our normal install will be covering both the GPU and CPU installation.
 
 ```bash
 pip install --upgrade pip
@@ -169,22 +191,6 @@ jax.tools.colab_tpu.setup_tpu()
 ```
 Colab TPU runtimes use an older TPU architecture than Cloud TPU VMs, so installing `jax[tpu]` should be avoided on Colab.
 If for any reason you would like to update the jax & jaxlib libraries on a Colab TPU runtime, follow the CPU instructions above (i.e. install `jax[cpu]`).
-
-## Neural network libraries
-
-Multiple Google research groups develop and share libraries for training neural
-networks in JAX. If you want a fully featured library for neural network
-training with examples and how-to guides, try
-[Flax](https://github.com/google/flax).
-
-In addition, DeepMind has open-sourced an [ecosystem of libraries around
-JAX](https://deepmind.com/blog/article/using-jax-to-accelerate-our-research)
-including [Haiku](https://github.com/deepmind/dm-haiku) for neural network
-modules, [Optax](https://github.com/deepmind/optax) for gradient processing and
-optimization, [RLax](https://github.com/deepmind/rlax) for RL algorithms, and
-[chex](https://github.com/deepmind/chex) for reliable code and testing. (Watch
-the NeurIPS 2020 JAX Ecosystem at DeepMind talk
-[here](https://www.youtube.com/watch?v=iDxJxIyzSiM))
 
 ## Citations
 
