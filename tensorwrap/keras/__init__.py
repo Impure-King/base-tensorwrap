@@ -12,3 +12,6 @@ from . import models
 from . import layers
 
 # Path Shorteners:
+
+from .models import Model
+from .models import Sequential

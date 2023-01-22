@@ -7,9 +7,13 @@
     <list default="true" id="65137e2a-fb3d-4dfb-b569-29e135714638" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tensorwrap/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tensorwrap/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tensorwrap/experimental/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/experimental/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tensorwrap/experimental/wrappers.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/experimental/wrappers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tensorwrap/keras/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/keras/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tensorwrap/keras/layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/keras/layers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tensorwrap/keras/losses.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/keras/losses.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tensorwrap/keras/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/keras/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tensorwrap/keras/optimizers.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/keras/optimizers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tensorwrap/module.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/module.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>

@@ -36,14 +36,16 @@ class Module(BaseModule):
 
     def tree_flatten(self):
         dic = vars(self).copy()
-        # Suboptimal solution to only
-        aux_data = [vars(self).pop(x) for x in dic if type(vars(self)[x]) != int]
+        try:
+            aux_data = vars(self).pop('kwargs')
+        except:
+            aux_data = None
         children = vars(self).values()
         return (children, aux_data)
 
     @classmethod
     def tree_unflatten(cls, aux_data, children):
-        return cls(*(aux_data, children), None)
+        return cls(*children)
 
     def call(self):
         pass

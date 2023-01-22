@@ -1,26 +1,20 @@
 import tensorwrap as tf
 from tensorwrap import keras
-import jax
 
 
-layer = tf.keras.layers.Dense(units=1)
+layer = keras.layers.Dense(units=1000)
+layer1 = keras.layers.Dense(units=1)
+array = tf.Variable([[1, 2, 3]], dtype=tf.float32)
 
-array = tf.Variable([[1, 2, 3]], dtype = tf.float32)
-def function(x):
-    if x:
-        return 'LOL'
-    elif not x:
-        return 'Hi'
-    else:
-        x += 1
-    return x
+model = keras.Sequential()
+model.add(layer)
+model.add(layer)
+model.add(layer)
+model.add(layer1)
 
-
-result = jax.tree_map(lambda x: x + 1, layer)
-result2 = jax.tree_map(lambda x: x, result)
-print(jax.tree_util.tree_leaves(result2))
-print(jax.tree_util.tree_leaves(layer))
-print(layer(array))
-
-
-
+model.compile(
+    loss=keras.losses.mse,
+    optimizer=keras.optimizers.SGD(),
+    metrics=keras.losses.mae
+)
+model.fit(array, array + 10, epochs=1)

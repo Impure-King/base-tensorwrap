@@ -2,24 +2,22 @@ import jax.random
 from jax import jit
 from jaxtyping import Array
 from tensorwrap.module import Module
+import tensorwrap as tf
 import jax.numpy as jnp
 from random import randint
-from tensorwrap.test import is_gpu_available
 
 
 class Layer(Module):
     """A base layer class that is used to create new JIT enabled layers.
        Acts as the subclass for all layers, to ensure that they are converted in PyTrees."""
 
-    # Removing initializer due to a bug:
-    def __init__(self, trainable=True, dtype=None, dynamic=not is_gpu_available(), **kwargs) -> None:
+    def __init__(self, trainable=True, dtype=None, dynamic=False, **kwargs) -> None:
         self.trainable = trainable
         self.dtype = dtype
         self.dynamic = dynamic
         self.kwargs = kwargs
-        self.built = False
 
-    def add_weights(self, shape=None, initializer='glorot_uniform', trainable=True):
+    def add_weights(self, shape=None, initializer='glorot_uniform', trainable=True, name=None):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
         Arguments:
             - shape: Shape of the inputs and the units
@@ -27,15 +25,15 @@ class Layer(Module):
             - trainable - Not required or implemented yet."""
 
         if initializer == 'zeros':
-            return jnp.zeros(shape, dtype=jnp.float32)
+            return name, jnp.zeros(shape, dtype=jnp.float32), trainable
 
         elif initializer == 'glorot_normal':
             key = jax.random.PRNGKey(randint(1, 10))
-            return jax.random.normal(key, shape)
+            return name, jax.random.normal(key, shape), trainable
 
         elif initializer == 'glorot_uniform':
             key = jax.random.PRNGKey(randint(1, 5))
-            return jax.random.uniform(key, shape)
+            return name, jax.random.uniform(key, shape), trainable
 
     def build(self, input_shape):
         input_dims = len(input_shape)
@@ -44,7 +42,7 @@ class Layer(Module):
                              "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
         self.built = True
 
-    def call(self):
+    def call(self) -> None:
         # Must be defined to satisfy arbitrary method.
         pass
 
@@ -58,6 +56,7 @@ class Layer(Module):
             function = self.call
         # Ensures a tensorflow-like API by calling the call function inside __call__.
         out = function(inputs)
+        self.built = False
         return out
 
 
@@ -84,19 +83,32 @@ class Dense(Layer):
                                      bias_regularizer=bias_regularizer,
                                      activity_regularizer=activity_regularizer,
                                      kernel_constraint=kernel_constraint,
-                                     bias_constraint=bias_constraint)
-        self.built = False
+                                     bias_constraint=bias_constraint,
+                                     built=False,
+                                     dynamic=not tf.test.is_gpu_available(),
+                                     weights=[],
+                                     trainable_weights=[],
+                                     trainable_variables=[])
 
     def build(self, input_shape):
         super().build(input_shape)
         self.kernel = self.add_weights(shape=(input_shape[-1], self.units),
-                                       initializer=self.kernel_initializer)
+                                       initializer=self.kernel_initializer,
+                                       name="kernel")
         self.bias = self.add_weights(shape=(self.units),
-                                     initializer=self.bias_initializer)
+                                     initializer=self.bias_initializer,
+                                     name="bias")
+
+        # Used to return the weights with trainable status
+        self.weights = [self.kernel, self.bias]
+        # Used to return trainable weights with their name:
+        self.trainable_weights = [x[:2] for x in self.weights if x[2]]
+        # Used to return trainable variables that can be used to apply gradients.
+        self.trainable_variables = [x[1] for x in self.trainable_weights]
 
     def call(self, inputs: Array) -> Array:
-        if self.use_bias == True:
-            return jnp.matmul(self.kernel, inputs) + self.bias
-        else:
-            return jnp.matmul(self.kernel, inputs)
 
+        if self.use_bias == True:
+            return jnp.matmul(inputs, self.kernel[1]) + self.bias[1]
+        else:
+            return jnp.matmul(inputs, self.kernel[1])
