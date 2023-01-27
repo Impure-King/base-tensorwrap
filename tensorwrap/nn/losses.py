@@ -40,8 +40,8 @@ class Loss(Module):
 
 
 def mse(y_true, y_pred):
-    return tf.square(tf.mean(y_pred - y_true))
+    return tf.square(y_pred - y_true)
 
 
 def mae(y_true, y_pred):
-    return tf.abs(tf.mean(y_pred - y_true))
+    return tf.mean(tf.abs(y_pred - y_true))

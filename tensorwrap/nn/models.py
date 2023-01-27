@@ -1,29 +1,25 @@
 """Sets of functions that allow you to define a custom model or a Sequential model."""
 import tensorwrap as tf
-from tensorwrap.keras.layers import Layer
+from tensorwrap.nn.layers import Layer
 import jax
 from jaxtyping import Array
-from termcolor import colored as c
+
 
 class Model(Layer):
     """ Main superclass for all models and loads any object as a PyTree with training and inference features."""
 
-    def __init__(self, dynamic=False, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         self.args = args
         self.kwargs = kwargs
-        self.dynamic = dynamic
 
-    def call(self) -> None:
+    def call(self) -> Array:
         pass
 
-    def __call__(self, *args):
-        if not self.dynamic:
-            function = jax.jit(self.call)
-        else:
-            function = self.call
-
-        inputs = function(args[0])
-        return inputs
+    def __call__(self, *args) -> Array:
+        # inputs = tf.Variable(args)
+        inputs = args[0]
+        outputs = self.call(inputs)
+        return outputs
 
     def compile(self,
                 loss,
@@ -34,18 +30,15 @@ class Model(Layer):
         self.optimizer = optimizer
         self.metrics = metrics
 
-    def creator(self):
-        self.array1 = tf.Variable(self.trainable_variables[0])
-        self.array2 = tf.Variable(self.trainable_variables[1])
 
     def train_step(self,
                    x,
-                   y=None):
+                   y=None,
+                   layer=None):
         y_pred = self.__call__(x)
         metric = self.metrics(y, y_pred)
-        grads_fn = jax.grad(self.loss_fn)
-        grads = grads_fn(y, y_pred)
-        self.trainable_variables = self.optimizer.apply_gradients(grads, self.array1, self.array2)
+        grads = jax.grad(self.loss_fn)(tf.mean(y), tf.mean(y_pred))
+        self.layers = self.optimizer.apply_gradients(grads, self.layers)
         return metric
 
     def fit(self,
@@ -53,9 +46,8 @@ class Model(Layer):
             y=None,
             epochs=1):
         for epoch in range(1, epochs+1):
-            metric = self.train_step(x, y)
+            metric = self.train_step(x, y, self.layers)
             print(f"Epoch {epoch} complete - - - - - -  Metrics: {metric}")
-
 
 
 
@@ -70,13 +62,6 @@ class Sequential(Model):
 
 
     def call(self, x) -> Array:
-        self.kernelses = []
-        self.biases = []
         for layer in self.layers:
-            if len(layer.trainable_variables) != 0:
-                self.kernelses.append(layer.trainable_variables[0])
-                self.biases.append(layer.trainable_variables[1])
             x = layer(x)
-        self.trainable_variables = [self.kernelses, self.biases]
-        self.creator()
         return x

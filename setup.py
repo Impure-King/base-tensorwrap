@@ -21,7 +21,6 @@ install_requires = [
     "jaxlib",
     "matplotlib",  # only needed for tensorboard export
     "pandas",
-    "GPUtil",
     "jaxtyping"
 ]
 
@@ -53,7 +52,7 @@ setup(
     long_description="\n\n".join([README]),
     long_description_content_type="text/markdown",
     classifiers=[
-        "Development Status :: PreAlpha",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
         "Programming Language :: Python :: 3.8",

@@ -1,8 +1,15 @@
-import GPUtil
+import jax
+from typing import Any
 
 
-def is_gpu_available():
-    """Returns a boolean value indicating whether current system has GPU with cuda or not.
-    This however doesn't tell if build is compatible with the current GPU or not."""
-    model = GPUtil.getAvailable()
-    return True if len(model) >= 1 else False
+def is_device_available(device_type: Any = "gpu"):
+    """Returns a boolean value indicating whether TensorWrap can detect current device. Defaults to cuda detection.
+    Args:
+     - device_type: A string indicating what type of device is needed."""
+    if device_type == 'cuda':
+        device_type = "gpu"
+    try:
+        jax.devices(device_type.lower())
+        return True
+    except:
+        return False
