@@ -1,11 +1,11 @@
 """Sets of functions that allow you to define a custom model or a Sequential model."""
 import tensorwrap as tf
-from tensorwrap.nn.layers import Layer
+from tensorwrap.module import Module
 import jax
 from jaxtyping import Array
 
 
-class Model(Layer):
+class Model(Module):
     """ Main superclass for all models and loads any object as a PyTree with training and inference features."""
 
     def __init__(self, *args, **kwargs) -> None:
@@ -16,7 +16,6 @@ class Model(Layer):
         pass
 
     def __call__(self, *args) -> Array:
-        # inputs = tf.Variable(args)
         inputs = args[0]
         outputs = self.call(inputs)
         return outputs
@@ -38,7 +37,7 @@ class Model(Layer):
         y_pred = self.__call__(x)
         metric = self.metrics(y, y_pred)
         grads = jax.grad(self.loss_fn)(tf.mean(y), tf.mean(y_pred))
-        self.layers = self.optimizer.apply_gradients(grads, self.layers)
+        self.layers = self.optimizer.apply_gradients(grads, layer)
         return metric
 
     def fit(self,

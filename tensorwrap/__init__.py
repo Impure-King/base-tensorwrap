@@ -22,5 +22,5 @@ from tensorwrap.experimental.wrappers import function
 from jax.numpy import array as Variable
 from jax.numpy import float16, float32, float64
 from jax.numpy import int16, int32, int64
-from jax.numpy import matmul, square, abs, mean
+from jax.numpy import matmul, square, abs, mean, sum
 from jax.numpy import reshape

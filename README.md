@@ -13,7 +13,7 @@
 
 TensorWrap is high performance neural network library that acts as a wrapper around [JAX](https://github.com/google/jax) (another high performance machine learning library), bringing the familiar feel of the [TensorFlow](https://tensorflow.org) (2.x.x) and [PyTorch](https://pytorch.org) (1.x.x) for users. How 
 
-TensorWrap works by creating a layer of abstraction over JAX's low level api and introducing similar TensorFlow-like component's while supporting Autograd in native JAX operations. Additionally, the api has been updated to become simpler and more concise than TensorFlow's current API. Namespaces, internals, and various 
+TensorWrap works by creating a layer of abstraction over JAX's low level api and introducing similar TensorFlow-like component's while supporting Autograd in native JAX operations. Additionally, the api has been updated to become simpler and more concise than TensorFlow's current API. Additionally, this library aims to improve the poor design of the TensorFlow API and making it more friendly towards research and educational audiences.
 
 This is a personal project, not professionally affliated with Google in any way. Expect bugs and several incompatibilities/difference from the original libraries.
 Please help by trying it out, [reporting
@@ -34,35 +34,45 @@ think!
 1) Custom Layers
 ```python
 import tensorwrap as tf
-from tensorwrap import keras
+from tensorwrap import nn
 
-class Dense(keras.layers.Layer):
+class Dense(nn.layers.Layer):
     def __init__(self, units) -> None:
         super().__init__() # Needed for making it JIT compatible.
         self.units = units # Defining the output shape.
   
     def build(self, input_shape: tuple) -> None:
-        super().build(input_shape) # Needed to check dimensions and build.
         self.kernel = self.add_weights([input_shape[-1], self.units],
-                                       activation = 'glorot_uniform')
+                                       initializer = 'glorot_uniform')
         self.bias = self.add_weights([self.units],
-                                     activation = 'zeros')
+                                     initializer = 'zeros')
+        super().build(input_shape) # Needed to check dimensions and build.
     
     # Use call not __call__ to define the flow. No tf.function needed either.
     def call(self, inputs):
         return inputs @ self.kernel + self.bias
 ```
 
-2) Custom Losses
+2) Just In Time Compiling with tf.function
 ```python
 import tensorwrap as tf
-from tensorwrap import keras
+from tensorwrap import nn
+tf.test.is_device_available(device_type = 'cuda')
 
-class MSE(keras.losses.Loss):
-    def __init__(self):
-        pass
+@tf.function
+def mse(y_pred, y_true):
+    return tf.mean(tf.square(y_pred - y_true))
+
+print(mse(100, 102))
 ```
+3) Customizing with Module Class
+```python 
 
+class CheckPoint(Module):
+    def __init__(self, metrics) -> None:
+        
+
+```
 
 
 ### Current Gimmicks
