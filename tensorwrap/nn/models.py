@@ -1,11 +1,11 @@
 """Sets of functions that allow you to define a custom model or a Sequential model."""
 import tensorwrap as tf
-from tensorwrap.nn.layers import Layer
+from tensorwrap.module import Module
 import jax
 from jaxtyping import Array
 
 
-class Model(Layer):
+class Model(Module):
     """ Main superclass for all models and loads any object as a PyTree with training and inference features."""
 
     def __init__(self, *args, **kwargs) -> None:

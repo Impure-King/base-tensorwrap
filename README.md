@@ -65,7 +65,14 @@ def mse(y_pred, y_true):
 
 print(mse(100, 102))
 ```
+3) Customizing with Module Class
+```python 
 
+class CheckPoint(Module):
+    def __init__(self, metrics) -> None:
+        
+
+```
 
 
 ### Current Gimmicks

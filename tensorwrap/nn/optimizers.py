@@ -17,6 +17,6 @@ class SGD(Optimizer):
         for layer in layers:
             kernel = layer.trainable_variables[0]
             bias = layer.trainable_variables[1]
-            layer.trainable_variables[0] = jax.tree_map(lambda x: x + gradients * self.lr, kernel)
-            layer.trainable_variables[1] = jax.tree_map(lambda x: x + gradients * self.lr, bias)
+            layer.trainable_variables[0] = jax.tree_map(lambda x: x + tf.mean(gradients * self.lr), kernel)
+            layer.trainable_variables[1] = jax.tree_map(lambda x: x + tf.mean(gradients * self.lr), bias)
         return layers

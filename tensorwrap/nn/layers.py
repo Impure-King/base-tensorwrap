@@ -58,7 +58,7 @@ class Layer(Module):
         return out
 
 
-class Linear(Layer):
+class Dense(Layer):
     def __init__(self,
                  units,
                  activation=None,
