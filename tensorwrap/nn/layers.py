@@ -42,7 +42,6 @@ class Layer(Module):
         if input_dims <= 1:
             raise ValueError("Input to the Dense layer has dimensions less than 1."
                              "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
-        self.built = True
         self.trainable_variables = [self.kernel, self.bias]
 
     def call(self) -> None:
@@ -54,7 +53,6 @@ class Layer(Module):
         # This will be called when called normally.
         self.build(inputs.shape)
         out = self.call(inputs)
-        self.built = False
         return out
 
 
