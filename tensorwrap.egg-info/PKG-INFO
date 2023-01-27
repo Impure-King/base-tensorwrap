@@ -1,3 +1,19 @@
+Metadata-Version: 2.1
+Name: tensorwrap
+Version: 0.0.0.3
+Summary: TensorWrap: A high level TensorFlow wrapper for JAX.
+Home-page: https://github.com/Impure-King/base-tensorwrap
+Author: Lelouch
+Author-email: ImpureK@gmail.com
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Description-Content-Type: text/markdown
+Provides-Extra: testing
+License-File: LICENSE
+
 # TensorWrap
 
 ![](https://github.com/Impure-King/base-tensorwrap/blob/CPU-Version/Images/TensorWrap.gif)

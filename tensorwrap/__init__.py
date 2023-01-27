@@ -1,30 +1,26 @@
-'''TensorWrap API'''
+""" TensorWrap's initial API. This API contains various frontend functions that are
+used to manipulate tensors and various data. However, most of the API currently borrows
+from JAX's built-in operations. For neural networks, please use the Keras API or import
+the Torch API to use PyTorch variants."""
 
-# Silencing the warnings:
+# Error Silencer:
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-# Importing necessary requirements:
-from . import core
-from . import keras
-from . import torch as pt
-import jax
+# Library Paths:
+from tensorwrap import nn
+from tensorwrap import module
+from tensorwrap import test
+from tensorwrap import config
 
-# Extra path shorteners:
+# Path Shortener:
+from tensorwrap.module import Module
+from tensorwrap.version import __version__
+from tensorwrap.experimental.wrappers import function
 
-from functools import partial as alter
-from tensorwrap.self import add_weight
-from tensorwrap.core.tensors import expand_dims
-from tensorwrap.core.tensors import range
-
-# Jax method conversion:
-from jax import numpy
-from jax.numpy import float32
+# JAX Built-ins:
 from jax.numpy import array as Variable
-from jax.numpy import absolute
-from jax import jit as function
-from jax import disable_jit
-from jax import random, grad
-
-# Don't remove:
-from .version import __version__
+from jax.numpy import float16, float32, float64
+from jax.numpy import int16, int32, int64
+from jax.numpy import matmul, square, abs, mean
+from jax.numpy import reshape
