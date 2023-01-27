@@ -16,6 +16,7 @@ class Layer(Module):
         self.trainable = trainable
         self.dtype = dtype
         self.kwargs = kwargs
+        self.trainable_variables = []
 
     @classmethod
     def add_weights(self, shape=None, initializer='glorot_uniform', trainable=True, name=None):
@@ -51,9 +52,9 @@ class Layer(Module):
 
     def __call__(self, inputs):
         # This will be called when called normally.
-        if not self.built:
-            self.build(inputs.shape)
+        self.build(inputs.shape)
         out = self.call(inputs)
+        self.built = False
         return out
 
 
@@ -81,7 +82,6 @@ class Linear(Layer):
                                      activity_regularizer=activity_regularizer,
                                      kernel_constraint=kernel_constraint,
                                      bias_constraint=bias_constraint,
-                                     built=False,
                                      dynamic=not tf.test.is_device_available())
 
     def build(self, input_shape):
@@ -94,7 +94,6 @@ class Linear(Layer):
         super().build(input_shape)
 
     def call(self, inputs: Array) -> Array:
-        self.built = False
         if self.use_bias == True:
             return jnp.matmul(inputs, self.trainable_variables[0]) + self.trainable_variables[1]
         else:

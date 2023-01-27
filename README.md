@@ -34,33 +34,36 @@ think!
 1) Custom Layers
 ```python
 import tensorwrap as tf
-from tensorwrap import keras
+from tensorwrap import nn
 
-class Dense(keras.layers.Layer):
+class Dense(nn.layers.Layer):
     def __init__(self, units) -> None:
         super().__init__() # Needed for making it JIT compatible.
         self.units = units # Defining the output shape.
   
     def build(self, input_shape: tuple) -> None:
-        super().build(input_shape) # Needed to check dimensions and build.
         self.kernel = self.add_weights([input_shape[-1], self.units],
-                                       activation = 'glorot_uniform')
+                                       initializer = 'glorot_uniform')
         self.bias = self.add_weights([self.units],
-                                     activation = 'zeros')
+                                     initializer = 'zeros')
+        super().build(input_shape) # Needed to check dimensions and build.
     
     # Use call not __call__ to define the flow. No tf.function needed either.
     def call(self, inputs):
         return inputs @ self.kernel + self.bias
 ```
 
-2) Custom Losses
+2) Just In Time Compiling with tf.function
 ```python
 import tensorwrap as tf
-from tensorwrap import keras
+from tensorwrap import nn
+tf.test.is_device_available(device_type = 'cuda')
 
-class MSE(keras.losses.Loss):
-    def __init__(self):
-        pass
+@tf.function
+def mse(y_pred, y_true):
+    return tf.mean(tf.square(y_pred - y_true))
+
+print(mse(100, 102))
 ```
 
 
