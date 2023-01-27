@@ -1,6 +1,6 @@
 # TensorWrap
 
-![](https://github.com/Impure-King/base-tensorwrap/blob/CPU-Version/Images/TensorWrap.gif)
+![](https://github.com/Impure-King/base-tensorwrap/blob/main/Images/TensorWrap.gif)
 
 # TensorWrap - A full-fledged Deep Learning Library based on JAX and TensorFlow.
 
