@@ -28,6 +28,9 @@ class Model(Module):
         self.loss_fn = loss
         self.optimizer = optimizer
         self.metrics = metrics
+        for i in range(len(self.layers) - 1):
+            output_shape = self.layers[i].units
+            self.layers[i+1].build([1, output_shape])
 
 
     def train_step(self,
@@ -44,9 +47,11 @@ class Model(Module):
             x=None,
             y=None,
             epochs=1):
+        self.layers[0].build(x.shape)
         for epoch in range(1, epochs+1):
             metric = self.train_step(x, y, self.layers)
-            print(f"Epoch {epoch} complete - - - - - -  Metrics: {metric}")
+            print(f"Epoch {epoch}/{epochs}")
+            print(f"1/1 [==============================] - loss: {metric}")
 
 
 

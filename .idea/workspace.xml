@@ -5,13 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="65137e2a-fb3d-4dfb-b569-29e135714638" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tensorwrap/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tensorwrap/keras/layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/keras/layers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tensorwrap/keras/losses.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/keras/losses.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tensorwrap/keras/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/keras/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tensorwrap/keras/optimizers.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/keras/optimizers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tensorwrap/nn/layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/nn/layers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tensorwrap/nn/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/tensorwrap/nn/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
