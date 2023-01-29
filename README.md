@@ -11,7 +11,7 @@
 
 ## What is TensorWrap?
 
-TensorWrap is high performance neural network library that acts as a wrapper around [JAX](https://github.com/google/jax) (another high performance machine learning library), bringing the familiar feel of the [TensorFlow](https://tensorflow.org) (2.x.x) and [PyTorch](https://pytorch.org) (1.x.x) for users. How 
+TensorWrap is high performance neural network library that acts as a wrapper around [JAX](https://github.com/google/jax) (another high performance machine learning library), bringing the familiar feel of the [TensorFlow](https://tensorflow.org) (2.x.x). This is currently aimed towards prototyping over deployment, in the current state. 
 
 TensorWrap works by creating a layer of abstraction over JAX's low level api and introducing similar TensorFlow-like component's while supporting Autograd in native JAX operations. Additionally, the api has been updated to become simpler and more concise than TensorFlow's current API. Additionally, this library aims to improve the poor design of the TensorFlow API and making it more friendly towards research and educational audiences.
 
@@ -76,10 +76,15 @@ class CheckPoint(Module):
 
 
 ### Current Gimmicks
-1. Current models are all compiled by JAX's internal jit, so it won't be possible to view the actual internals of models, especially if it is a Sequential or Functional equations.
+1. Current models are all compiled by JAX's internal jit, so any error may remain a bit more cryptic than PyTorchs. However, this problem is still being worked on.
 
 2. Also, using Module is currently not recommended, since other superclasses offer more functionality and ease of use.
 
+3. Sometime, the JAX backend may give out and give an algorithmic error. Another high priority, though this one is hidden in the C++ api of JIT.
+
+4. The JIT compilation is currently double of TensorFlow's on big models. However, the speed up is immense.
+
+5. Graph execution and model saving is not available currently.
 
 
 ### Installation

@@ -6,8 +6,8 @@ from jax.tree_util import register_pytree_node_class
 
 class BaseModule(metaclass=ABCMeta):
     """ This is the most basic template that defines all subclass items to be a pytree and accept arguments flexibly.
-    Don't use this template and instead refer to the Module Template, in order to create custom parts. If really needed,
-    use the PyTorch variation which will be suited for research."""
+    Don't use this template and instead refer to the Module Template, since it registers all the necessary methods. If using,
+    making sure to define the tree_flatten and tree_unflatten methods appropriately."""
 
     def __init__(self, *args, **kwargs) -> None:
         # Setting all the argument attributes:

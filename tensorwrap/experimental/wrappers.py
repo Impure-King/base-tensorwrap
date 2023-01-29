@@ -1,9 +1,8 @@
 import jax
 
 
-def function(func, **kwargs):
-    """A decorator that compiles a function on graph and optimizes it for performance."""
+def graph(func, **kwargs):
+    """A decorator that compiles a function on graph and readies it for export."""
     def wrapper(*args):
-        funct = jax.jit(func, **kwargs)
-        return funct(*args)
+        pass
     return wrapper
