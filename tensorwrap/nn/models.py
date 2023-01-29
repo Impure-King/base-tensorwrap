@@ -43,6 +43,41 @@ class Model(Module):
         self.layers = self.optimizer.apply_gradients(grads, layer)
         return metric
 
+    def predict(self,
+                x):
+        """ The method for predicting values. It is more concise than directly passing
+        the inputs through the hidden __call__ function.
+        Args:
+         - x: The input to predict on."""
+        y_pred = self.__call__(x)
+        return y_pred
+    
+    def evaluate(self,
+                x: Array,
+                y: Array,
+                loss = None,
+                metrics = None):
+        """ The method for evaluating the loss on test set. Losses and Metrics must be passed,
+        if the model wasn't compiled through the fit method.
+        Args:
+         - x: The inputs to predict on.
+         - y: The ground-truth values.
+         - loss (optional): The loss function to evaluate on.
+         - metrics (optional): The metrics to evaluate on.
+        """
+        if loss != None:
+            self.loss = loss
+        else:
+            self.loss = self.loss_fn
+        if metrics != None:
+            self.metric_fn = metrics
+        else:
+            self.metric_fn = self.metrics
+        y_pred = self.__call__(x)
+        loss = self.loss(y, y_pred)
+        metric = self.metric_fn(y, y_pred)
+        print(f"1/1 [==============================] - loss: {loss} - metric {metric}")
+
     def fit(self,
             x=None,
             y=None,
