@@ -16,6 +16,7 @@ from tensorwrap import config
 # Path Shortener:
 from tensorwrap.module import Module
 from tensorwrap.version import __version__
+from tensorwrap.experimental.serialize import save_model, load_model
 
 # JAX Built-ins:
 from jax import jit as function
