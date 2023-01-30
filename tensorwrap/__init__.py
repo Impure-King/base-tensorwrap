@@ -1,7 +1,7 @@
 """ TensorWrap's initial API. This API contains various frontend functions that are
 used to manipulate tensors and various data. However, most of the API currently borrows
-from JAX's built-in operations. For neural networks, please use the Keras API or import
-the Torch API to use PyTorch variants."""
+from JAX's built-in operations. For neural networks, please use the nn API to and or built custom parts from
+the """
 
 # Error Silencer:
 import os
@@ -17,6 +17,7 @@ from tensorwrap import config
 from tensorwrap.module import Module
 from tensorwrap.version import __version__
 from tensorwrap.experimental.serialize import save_model, load_model
+from tensorwrap.ops import expand_dims
 
 # JAX Built-ins:
 from jax import jit as function
@@ -25,10 +26,13 @@ from jax.numpy import float16, float32, float64
 from jax.numpy import int16, int32, int64
 from jax.numpy import matmul, square, abs, mean, sum
 from jax.numpy import reshape
+from jax.numpy import arange as range
 
 # GPU detector:
 
 if test.is_device_available('cuda'):
     print("GPU found. Optimizing for performance.")
+elif test.is_device_available('tpu'):
+    print("TPU found. Optimizing for performance.")
 else:
-    print("GPU missing.")
+    print("GPU/TPU missing. Falling back to CPU.")
