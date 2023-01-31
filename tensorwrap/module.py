@@ -22,7 +22,7 @@ class BaseModule(metaclass=ABCMeta):
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__()
         register_pytree_node_class(cls)
-        # jit(cls)
+        jit(cls)
 
     @abstractmethod
     def call(self, *args, **kwargs):
