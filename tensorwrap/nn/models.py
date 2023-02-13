@@ -42,13 +42,27 @@ class Model(Module):
         return metric, loss
 
     def fit(self,
-            x=None,
-            y=None,
+            x,
+            y,
             epochs=1):
         for epoch in range(1, epochs+1):
             metric, loss = self.train_step(x, y, self.layers)
-            print(f"Epoch {epoch} [=======================]  Loss: {loss} Metric: {metric}")
+            print(f"Epoch {epoch}|{epochs} \n"
+                  f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
+    
+    def evaluate(self,
+                 x,
+                 y_true):
+        prediction = self.__call__(x)
+        metric = self.metrics(y_true, prediction)
+        loss = self.loss_fn(y_true, prediction)
+        print(f"Epoch 1|1 \n"
+                  f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
 
+    # Add a precision counter soon.
+    def predict(self, x: Array, precision = None):
+        array = self.__call__(x)
+        return array
 
 
 class Sequential(Model):
