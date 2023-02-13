@@ -23,11 +23,11 @@ class Model(Module):
     def compile(self,
                 loss,
                 optimizer,
-                metrics):
+                metrics = None):
         """Used to compile a keras model before training."""
         self.loss_fn = loss
         self.optimizer = optimizer
-        self.metrics = metrics
+        self.metrics = metrics if metrics != None else loss
 
 
     def train_step(self,
@@ -36,17 +36,18 @@ class Model(Module):
                    layer=None):
         y_pred = self.__call__(x)
         metric = self.metrics(y, y_pred)
+        loss = self.loss_fn(y, y_pred)
         grads = jax.grad(self.loss_fn)(tf.mean(y), tf.mean(y_pred))
         self.layers = self.optimizer.apply_gradients(grads, layer)
-        return metric
+        return metric, loss
 
     def fit(self,
             x=None,
             y=None,
             epochs=1):
         for epoch in range(1, epochs+1):
-            metric = self.train_step(x, y, self.layers)
-            print(f"Epoch {epoch} complete - - - - - -  Metrics: {metric}")
+            metric, loss = self.train_step(x, y, self.layers)
+            print(f"Epoch {epoch} [=======================]  Loss: {loss} Metric: {metric}")
 
 
 
