@@ -30,11 +30,11 @@ class Layer(Module):
             return jnp.zeros(shape, dtype=jnp.float32)
 
         elif initializer == 'glorot_normal':
-            key = jax.random.PRNGKey(randint(1, 10))
+            key = jax.random.PRNGKey(2)
             return jax.random.normal(key, shape, dtype = tf.float32)
 
         elif initializer == 'glorot_uniform':
-            key = jax.random.PRNGKey(randint(1, 5))
+            key = jax.random.PRNGKey(2)
             return jax.random.uniform(key, shape, dtype = tf.float32)
 
     def build(self, input_shape):
