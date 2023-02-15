@@ -90,7 +90,7 @@ class Custom(Module):
 
 
 class Model(Module):
-    """ Main superclass for all models and loads any object as a PyTree with training and inference features."""
+    """This is a Sequential-Only template. It is used to avoid errors, when mixing user-defined code with the internals. Please avoid using for user purposes."""
 
     def __init__(self, *args, **kwargs) -> None:
         self.args = args
@@ -105,27 +105,6 @@ class Model(Module):
         outputs = self.call(inputs)
         return outputs
 
-    def compile(self,
-                loss,
-                optimizer,
-                metrics = None):
-        """Used to compile a keras model before training."""
-        for i in vars(self):
-            if i != 'args' and i != 'kwargs':
-                self.layers.append(vars(self)[i])
-        self.layers.pop(0)
-        self.loss_fn = loss
-        self.optimizer = optimizer
-        self.metrics = metrics
-        print(len(self.layers))
-        if len(self.layers) != 1:
-            self.layers = np.squeeze(self.layers)
-        try:
-            for i in range(len(self.layers) - 1):
-                output_shape = self.layers[i].units
-                self.layers[i+1].build([1, output_shape])
-        except TypeError:
-            pass
 
     def train_step(self,
                    x,
@@ -172,15 +151,39 @@ class Model(Module):
         metric = self.metric_fn(y, y_pred)
         print(f"1/1 [==============================] - loss: {loss} - metric {metric}")
 
+    def compile(self,
+                loss,
+                optimizer,
+                metrics = None):
+        """Used to compile a keras model before training."""
+        self.loss_fn = loss
+        self.optimizer = optimizer
+        self.metrics = metrics
+        
+        for i in vars(self):
+            if i != 'args' and i != 'kwargs' and i != 'layers':
+                self.layers.append(vars(self)[i])
+
+        for i in range(len(self.layers) - 1):
+            try:
+                output_shape = self.layers[i].units
+                self.layers[i+1].build([1, output_shape])
+            except:
+                for y in vars(self.layers[i]):
+                    if y != 'trainable_variables' and y != 'trainable' and y != 'dtype' and y != 'kwargs':
+                        output_shape = self.layers[i].__getattribute__(y).units
+                        self.layers[i]
+
     def fit(self,
             x=None,
             y=None,
             epochs=1):
+        self.layers[0].build(x.shape)
         for epoch in range(1, epochs+1):
-            self.layers[epoch - 1].build(x.shape)
             metric = self.train_step(x, y, self.layers)
             print(f"Epoch {epoch}/{epochs}")
             print(f"1/1 [==============================] - loss: {metric}")
+
 
 
 class Sequential(Custom):
