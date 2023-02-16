@@ -13,7 +13,7 @@
 
 TensorWrap is high performance neural network library that acts as a wrapper around [JAX](https://github.com/google/jax) (another high performance machine learning library), bringing the familiar feel of the [TensorFlow](https://tensorflow.org) (2.x.x). This is currently aimed towards prototyping over deployment, in the current state. 
 
-TensorWrap works by creating a layer of abstraction over JAX's low level api and introducing similar TensorFlow-like component's while supporting Autograd in native JAX operations. Additionally, the api has been updated to become simpler and more concise than TensorFlow's current API. Additionally, this library aims to improve the poor design of the TensorFlow API and making it more friendly towards research and educational audiences.
+TensorWrap works by creating a layer of abstraction over JAX's low level api and introducing similar TensorFlow-like component's while supporting Autograd in native JAX operations. Additionally, the api has been updated to become more simpler and concise than TensorFlow's current API, by removing the redundant API's and deprecations that it possesses. Additionally, this library aims to improve the poor design of the TensorFlow API and making it more friendly towards research and educational audiences.
 
 This is a personal project, not professionally affliated with Google in any way. Expect bugs and several incompatibilities/difference from the original libraries.
 Please help by trying it out, [reporting
@@ -79,13 +79,13 @@ class CheckPoint(Module):
 ### Current Gimmicks
 1. Current models are all compiled by JAX's internal jit, so any error may remain a bit more cryptic than PyTorchs. However, this problem is still being worked on.
 
-2. Also, using Module is currently not recommended, since other superclasses offer more functionality and ease of use.
+2. Also, using ``tensorwrap.Module`` is currently not recommended, since other superclasses offer more functionality and ease of use.
 
 3. Sometime, the JAX backend may give out and give an algorithmic error. Another high priority, though this one is hidden in the C++ api of JIT.
 
 4. The JIT compilation is currently double of TensorFlow's on big models. However, the speed up is immense.
 
-5. Graph execution and model saving is not available currently.
+5. Graph execution is currently not availible, which means that all exported models can only be deployed within a python environment.
 
 
 ### Installation
