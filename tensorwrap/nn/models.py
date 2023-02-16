@@ -4,7 +4,6 @@ from tensorwrap.module import Module
 import jax
 from jaxtyping import Array
 
-
 class Model(Module):
     """ Main superclass for all models and loads any object as a PyTree with training and inference features."""
 
@@ -24,7 +23,7 @@ class Model(Module):
                 loss,
                 optimizer,
                 metrics = None):
-        """Used to compile a keras model before training."""
+        """Used to compile the nn model before training."""
         self.loss_fn = loss
         self.optimizer = optimizer
         self.metrics = metrics if metrics != None else loss
@@ -48,7 +47,7 @@ class Model(Module):
         for epoch in range(1, epochs+1):
             metric, loss = self.train_step(x, y, self.layers)
             print(f"Epoch {epoch}|{epochs} \n"
-                  f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
+                f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
     
     def evaluate(self,
                  x,
@@ -61,7 +60,11 @@ class Model(Module):
 
     # Add a precision counter soon.
     def predict(self, x: Array, precision = None):
-        array = self.__call__(x)
+        try:
+            array = self.__call__(x)
+        except TypeError:
+            x = jax.numpy.array(x, dtype = jax.numpy.float32)
+            array = self.__call__(x)
         return array
 
 
