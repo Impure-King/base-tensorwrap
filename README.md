@@ -40,6 +40,7 @@ class Dense(nn.layers.Layer):
     def __init__(self, units) -> None:
         super().__init__() # Needed for making it JIT compatible.
         self.units = units # Defining the output shape.
+        self.built = True # Needed to avoid recompilation.
   
     def build(self, input_shape: tuple) -> None:
         self.kernel = self.add_weights([input_shape[-1], self.units],
@@ -107,7 +108,7 @@ If any problems occur with cuda installation, please visit the [JAX](www.github.
 
 ## Citations
 
-This project have been heavily inspired by __TensorFlow__ and once again, is built on the open-source machine learning XLA framework __JAX__. Therefore, I recongnize the authors of JAX and TensorFlow for the exceptional work they have done and understand that my library doesn't profit in any sort of way, since it is merely an add-on to the already existing community.
+This project have been heavily inspired by __TensorFlow__ and once again, is built on the open-source machine learning XLA framework __JAX__. Therefore, I recognize the authors of JAX and TensorFlow for the exceptional work they have done and understand that my library doesn't profit in any sort of way, since it is merely an add-on to the already existing community.
 
 ```
 @software{jax2018github,
