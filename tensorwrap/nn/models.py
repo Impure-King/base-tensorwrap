@@ -24,7 +24,7 @@ class Model(Module):
                 loss,
                 optimizer,
                 metrics = None):
-        """Used to compile a keras model before training."""
+        """Used to compile the nn model before training."""
         self.loss_fn = loss
         self.optimizer = optimizer
         self.metrics = metrics if metrics != None else loss
@@ -48,7 +48,7 @@ class Model(Module):
         for epoch in range(1, epochs+1):
             metric, loss = self.train_step(x, y, self.layers)
             print(f"Epoch {epoch}|{epochs} \n"
-                  f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
+                f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
     
     def evaluate(self,
                  x,

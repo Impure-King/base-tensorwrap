@@ -51,7 +51,7 @@ class Layer(Module):
     
 
     def __call__(self, inputs):
-        # This will be called when called normally.
+        # This is to compile, in not built.
         if not self.built:
             self.build(inputs.shape)
         out = self.call(inputs)
@@ -98,4 +98,4 @@ class Dense(Layer):
         if self.use_bias == True:
             return jnp.matmul(inputs, self.trainable_variables[0]) + self.trainable_variables[1]
         else:
-            return jnp.matmul(inputs, self.trainable_variables[0])
+            return jnp.matmul(inputs, self.trainable_variables[0], inputs)
