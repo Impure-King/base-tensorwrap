@@ -30,19 +30,20 @@ class Layer(Module):
             return jnp.zeros(shape, dtype=jnp.float32)
 
         elif initializer == 'glorot_normal':
-            key = jax.random.PRNGKey(2)
+            key = jax.random.PRNGKey(randint(1, 10))
             return jax.random.normal(key, shape, dtype = tf.float32)
 
         elif initializer == 'glorot_uniform':
-            key = jax.random.PRNGKey(2)
+            key = jax.random.PRNGKey(randint(1, 10))
             return jax.random.uniform(key, shape, dtype = tf.float32)
 
     def build(self, input_shape):
         input_dims = len(input_shape)
         if input_dims <= 1:
-            raise ValueError("Input to the Dense layer has dimensions less than 1."
+            raise ValueError("Input to the Dense layer has dimensions less than 1. \n"
                              "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
         self.trainable_variables = [self.kernel, self.bias]
+        self.built = True
 
     def call(self) -> None:
         # Must be defined to satisfy arbitrary method.
@@ -51,7 +52,8 @@ class Layer(Module):
 
     def __call__(self, inputs):
         # This will be called when called normally.
-        self.build(inputs.shape)
+        if not self.built:
+            self.build(inputs.shape)
         out = self.call(inputs)
         return out
 
@@ -70,6 +72,7 @@ class Dense(Layer):
                  bias_constraint=None,
                  *args,
                  **kwargs):
+        self.built = False
         super(Module, self).__init__(units=units,
                                      activation=activation,
                                      use_bias=use_bias,
