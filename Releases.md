@@ -10,7 +10,7 @@
 1. Expand_dims has been added to allow for easier dimension expansion.
 2. An Ops module has been added to allow for manipulate JAX type arrays (which includes ``tf.Variables`` and ``tf.range``).
 3. The unstable random generating weights has been address, and precompiled inputs has been replaces by dynamic compilation, while retaining speed and reducing error margins.
-4. A new self.built is now required for custom layers.
+4. A new ``self.built`` is now required for custom layers.
 
 **Current Problems/Gotchas**:
 1. Custom Models and Checkpoints are still not supported.
