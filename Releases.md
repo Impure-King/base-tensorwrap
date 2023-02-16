@@ -14,7 +14,7 @@
 
 **Current Problems/Gotchas**:
 1. Custom Models and Checkpoints are still not supported.
-2. Large variation in dense layer units will yeild a compressing error.
+2. Large variation in dense layer units will yield a compressing error.
 
 This version aimed to mostly improve performance and allow for proper training. Additionally, it has now allowed a setup, where future features may be added without errors. However, please note that the internals is bound to change to continue performance increase and introduce more components + flexibility for users.
 
