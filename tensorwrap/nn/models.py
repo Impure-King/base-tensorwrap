@@ -4,7 +4,6 @@ from tensorwrap.module import Module
 import jax
 from jaxtyping import Array
 
-
 class Model(Module):
     """ Main superclass for all models and loads any object as a PyTree with training and inference features."""
 
@@ -61,7 +60,11 @@ class Model(Module):
 
     # Add a precision counter soon.
     def predict(self, x: Array, precision = None):
-        array = self.__call__(x)
+        try:
+            array = self.__call__(x)
+        except TypeError:
+            x = jax.numpy.array(x, dtype = jax.numpy.float32)
+            array = self.__call__(x)
         return array
 
 
