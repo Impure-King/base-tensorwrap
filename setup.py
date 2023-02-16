@@ -19,6 +19,7 @@ install_requires = [
     "numpy>=1.12",
     "jax>=0.3.16",
     "jaxlib",
+    "dill",
     "matplotlib",  # only needed for tensorboard export
     "pandas",
     "jaxtyping"
