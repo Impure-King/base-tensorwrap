@@ -9,7 +9,7 @@ class Optimizer(Module):
         self.lr = lr
 
 
-class SGD(Optimizer):
+class gradient_descent(Optimizer):
     def __init__(self, learning_rate=0.01):
         super().__init__(lr=learning_rate)
 
