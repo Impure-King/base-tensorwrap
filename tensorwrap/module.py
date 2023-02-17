@@ -24,13 +24,14 @@ class BaseModule(metaclass=ABCMeta):
         register_pytree_node_class(cls)
         jit(cls)
 
+
     @abstractmethod
     def call(self, *args, **kwargs):
         pass
 
 
 
-# Creating abstract class:
+# Creating the unrolled tree class:
 class Module(BaseModule):
     """This is the base class for all types of functions and components.
     This is going to be a static type component, in order to allow jit.compile

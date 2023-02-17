@@ -3,6 +3,7 @@ import tensorwrap as tf
 from tensorwrap.module import Module
 import jax
 from jaxtyping import Array
+import copy
 
 class Model(Module):
     """ Main superclass for all models and loads any object as a PyTree with training and inference features."""
@@ -27,6 +28,14 @@ class Model(Module):
         self.loss_fn = loss
         self.optimizer = optimizer
         self.metrics = metrics if metrics != None else loss
+
+        # Creating different objects for all layers:
+        for layer in self.layers:
+            self.layers.remove(layer)
+            if layer in self.layers:
+                self.layers.append(copy.deepcopy(layer))
+            else:
+                self.layers.append(layer)
 
 
     def train_step(self,
