@@ -11,6 +11,7 @@ class Model(Module):
     def __init__(self, *args, **kwargs) -> None:
         self.args = args
         self.kwargs = kwargs
+        self.layers = []
 
     def call(self) -> Array:
         pass
@@ -29,6 +30,10 @@ class Model(Module):
         self.optimizer = optimizer
         self.metrics = metrics if metrics != None else loss
 
+        for i in vars(self):
+            _obj = vars(self)[i]
+            if isinstance(_obj, tf.nn.layers.Layer):
+                self.layers.append(_obj)
         # Creating different objects for all layers:
         for layer in self.layers:
             self.layers.remove(layer)
