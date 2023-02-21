@@ -21,6 +21,7 @@ class Layer(Module):
     @classmethod
     def add_weights(self, shape=None, initializer='glorot_uniform', trainable=True, name=None):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
+        ---------
         Arguments:
             - shape: Shape of the inputs and the units
             - initializer: The initial values of the weights
