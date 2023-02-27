@@ -11,6 +11,8 @@ class Model(Module):
     def __init__(self, *args, **kwargs) -> None:
         self.args = args
         self.kwargs = kwargs
+        self.trainable_variables = []
+        self.layers = []
 
     def call(self) -> Array:
         pass
@@ -30,12 +32,21 @@ class Model(Module):
         self.metrics = metrics if metrics != None else loss
 
         # Creating different objects for all layers:
+        for i in vars(self):
+            _object = vars(self)[i]
+            if isinstance(_object, tf.nn.layers.Layer):
+                self.layers.append(_object)
+
         for layer in self.layers:
             self.layers.remove(layer)
             if layer in self.layers:
                 self.layers.append(copy.deepcopy(layer))
             else:
                 self.layers.append(layer)
+        
+        for i in range(len(self.layers)-1):
+            self.layers[i+1].build([self.layers[i].units], True)
+            print("true")
 
 
     def train_step(self,
@@ -81,7 +92,6 @@ class Sequential(Model):
     def __init__(self, layers=None) -> None:
         super().__init__()
         self.layers = [] if layers is None else layers
-        self.trainable_variables = []
 
     def add(self, layer):
         self.layers.append(layer)
