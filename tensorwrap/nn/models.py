@@ -45,7 +45,7 @@ class Model(Module):
                 self.layers.append(layer)
         
         for i in range(len(self.layers)-1):
-            self.layers[i+1].build([self.layers[i].units], True)
+            self.layers[i+1].build(tf.shape(self.layers[i].units))
             print("true")
 
 
