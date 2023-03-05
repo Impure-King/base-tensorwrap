@@ -44,9 +44,10 @@ class Model(Module):
             else:
                 self.layers.append(layer)
         
-        for i in range(len(self.layers)-1):
-            self.layers[i+1].build(tf.shape(self.layers[i].units))
-            print("true")
+        # Doesn't offer any speed ups:
+        # for i in range(len(self.layers)-1):
+        #     self.layers[i+1].build(tf.shape(self.layers[i].units))
+        #     print("true")
 
 
     def train_step(self,
@@ -60,14 +61,31 @@ class Model(Module):
         self.layers = self.optimizer.apply_gradients(grads, layer)
         return metric, loss
 
+    def _verbose0(layer, epoch, epochs, loss, metric):
+        return 0
+
+    def _verbose1(layer, epoch, epochs, loss, metric):
+        print(f"Epoch {epoch}|{epochs} \n"
+                f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
+    
+    def _verbose2(layer, epoch, epochs, loss, metric):
+        print(f"Epoch {epoch}|{epochs} \t\t\t Loss: {loss:10.5f}\t\t\t     Metric: {metric:10.5f}")
+
     def fit(self,
             x,
             y,
-            epochs=1):
+            epochs=1,
+            verbose = 1):
+        if verbose==0:
+            print_func=self._verbose0
+        elif verbose==1:
+            print_func=self._verbose1
+        else:
+            print_func=self._verbose2
+        
         for epoch in range(1, epochs+1):
             metric, loss = self.train_step(x, y, self.layers)
-            print(f"Epoch {epoch}|{epochs} \n"
-                f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
+            print_func(epoch=epoch, epochs=epochs, loss=loss, metric=metric)
     
     def evaluate(self,
                  x,
@@ -75,8 +93,7 @@ class Model(Module):
         prediction = self.__call__(x)
         metric = self.metrics(y_true, prediction)
         loss = self.loss_fn(y_true, prediction)
-        print(f"Epoch 1|1 \n"
-                  f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
+        self._verbose1(epoch=1, epochs=1, loss=loss, metric=metric)
 
     # Add a precision counter soon.
     def predict(self, x: Array, precision = None):

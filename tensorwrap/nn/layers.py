@@ -39,14 +39,6 @@ class Layer(Module):
             key = jax.random.PRNGKey(randint(1, 10))
             return jax.random.uniform(key, shape, dtype = tf.float32)
 
-    # Previous build is depracated.
-    def build(self, input_shape, input_check: bool = True):
-    #     input_dims = len(input_shape)
-    #     if input_dims <= 1 and input_check:
-    #         print("Input to the Dense layer has dimensions less than 1. \n"
-    #               "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
-    #     self.trainable_variables = [self.kernel, self.bias]
-        self.built = True
 
     def call(self) -> None:
         # Must be defined to satisfy arbitrary method.
@@ -59,6 +51,15 @@ class Layer(Module):
             self.build(tf.shape(inputs))
         out = self.call(inputs)
         return out
+
+    # Previous build is depracated.
+    # def build(self, input_shape, input_check: bool = True):
+    #     input_dims = len(input_shape)
+    #     if input_dims <= 1 and input_check:
+    #         print("Input to the Dense layer has dimensions less than 1. \n"
+    #               "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
+    #     self.trainable_variables = [self.kernel, self.bias]
+    #     self.built = True
 
 
 # Dense Layer:
@@ -98,6 +99,7 @@ class Dense(Layer):
                                      initializer=self.bias_initializer,
                                      name="bias")
         self.trainable_variables = [self.kernel, self.bias]
+        self.built = True
 
     def call(self, inputs: Array) -> Array:
         if self.use_bias == True:
