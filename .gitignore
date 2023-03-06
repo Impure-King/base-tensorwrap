@@ -19,3 +19,11 @@ tensorwrap/nn/__pycache__/layers.cpython-310.pyc
 tensorwrap/nn/__pycache__/losses.cpython-310.pyc
 tensorwrap/nn/__pycache__/models.cpython-310.pyc
 tensorwrap/nn/__pycache__/optimizers.cpython-310.pyc
+dist/tensorwrap-0.0.0.5-py3-none-any.whl
+dist/tensorwrap-0.0.0.5.tar.gz
+tensorwrap.egg-info/dependency_links.txt
+tensorwrap.egg-info/not-zip-safe
+tensorwrap.egg-info/PKG-INFO
+tensorwrap.egg-info/requires.txt
+tensorwrap.egg-info/SOURCES.txt
+tensorwrap.egg-info/top_level.txt
