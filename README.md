@@ -17,7 +17,7 @@ TensorWrap works by creating a layer of abstraction over JAX's low level api and
 
 This is a personal project, not professionally affliated with Google in any way. Expect bugs and several incompatibilities/difference from the original libraries.
 Please help by trying it out, [reporting
-bugs](https://github.com/Impure-King/base-tensorwrap/issues), and letting us know what you
+bugs](https://github.com/Impure-King/base-tensorwrap/issues), and letting me know what you
 think!
 
 ### Contents
