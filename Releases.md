@@ -3,7 +3,7 @@
 **Major Changes**
 1. Custom Models have been added, provided they don't use a multi-dim inputs or multi-dim outputs.
 2. New Layer subclasses have been added: 
-    1. ``tensorwrap.nn.layers.Locked`` - Implements a layer identical to the ``tensorwrap.nn.layers.Layer``, but have frozen weights.
+    1. ```python tensorwrap.nn.layers.Locked``` - Implements a layer identical to the ``tensorwrap.nn.layers.Layer``, but have frozen weights.
     2. ``tensorwrap.nn.layers.Lambda`` - Superclasses layers with no variables, but instead certain functionality.
 
 **Code Updates**
