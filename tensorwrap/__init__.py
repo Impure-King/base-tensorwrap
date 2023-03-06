@@ -32,4 +32,5 @@ from jax.numpy import (array as Variable,
                        reshape,
                        float16,
                        float32,
-                       float64)
+                       float64,
+                       eye as identity)
