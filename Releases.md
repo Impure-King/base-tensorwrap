@@ -6,7 +6,7 @@
     2. ``tensorwrap.nn.layers.Lambda`` - Superclasses layers with no variables, but instead certain functionality.
 
 **Minor Changes**
-2. __In Progress__: Adding an experimental feature that converts prebuilt ``tensorwrap.nn.layers.Layer`` objects into ``tensorwrap.nn.layers.Locked`` objects, while preserving state.
+1. __In Progress__: Adding an experimental feature that converts prebuilt ``tensorwrap.nn.layers.Layer`` objects into ``tensorwrap.nn.layers.Locked`` objects, while preserving state.
 
 <hr>
 
