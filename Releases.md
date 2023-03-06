@@ -1,17 +1,21 @@
-## Version 0.0.0.5 PreRelease Notes:
-
 **Major Changes**
-1. Custom Models have been added, provided they don't use a multi-dim inputs or multi-dim outputs.
-2. New Layer subclasses have been added: 
+1. New Layer subclasses have been added: 
     1. ``tensorwrap.nn.layers.Locked`` - Implements a layer identical to the ``tensorwrap.nn.layers.Layer``, but have frozen weights.
     2. ``tensorwrap.nn.layers.Lambda`` - Superclasses layers with no variables, but instead certain functionality.
 
+**Minor Changes**
+2. __In Progress__: Adding an experimental feature that converts prebuilt ``tensorwrap.nn.layers.Layer`` objects into ``tensorwrap.nn.layers.Locked`` objects, while preserving state.
+
+<hr>
+
+## Version 0.0.0.5 Release Notes:
+
+**Major Changes**
+1. Custom Models have been added, provided they don't use a multi-dim inputs or multi-dim outputs.
+2. Speed has been increased 1.5x on average.
+
 **Code Updates**
 1. All ``tensorwrap.nn.optimizers.SGD`` objects should now be updated to ``tensorwrap.nn.optimizers.gradient_descent``.
-
-**Minor Changes**
-1. Statically compilation has now been fixed and added back.
-2. __In Progress__: Adding an experimental feature that converts prebuilt ``tensorwrap.nn.layers.Layer`` objects into ``tensorwrap.nn.layers.Locked`` objects, while preserving state.
 
 **Current Problems/Gotchas**:
 1. Large variation in dense layer units will yield a compressing error.
@@ -19,7 +23,7 @@
 3. Internal API still iterates layer by layer to implement gradient descent.
 4. Custom training loop and batching is currently unavailable.
 
-This version mostly aimed to add more low-level control for users and introduce new API. The performance should remain relative the same, though the built-in compile function has more hidden functions. Lastly, this was a quick fix update, so new changes were not the main goal of the update.
+This version mostly aimed to act as a bug fix and increase speed for users. Additionally, some new modules will be implemented on the next update. Stay tuned for more news.
 
 <hr>
 
