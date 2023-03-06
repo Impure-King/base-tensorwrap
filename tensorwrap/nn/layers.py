@@ -107,8 +107,4 @@ class Dense(Layer):
         else:
             return jnp.matmul(inputs, self.trainable_variables[0], inputs)
 
-# New Convolution 2D Layer:
-# 
-# def Conv2D(Layer):
-#     def __init__():
-#         super().__
+
