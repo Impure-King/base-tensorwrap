@@ -1,3 +1,5 @@
+
+## Version 0.0.0.6 Prerelease Notes:
 **Major Changes**
 1. New Layer subclasses have been added: 
     1. ``tensorwrap.nn.layers.Locked`` - Implements a layer identical to the ``tensorwrap.nn.layers.Layer``, but have frozen weights.
