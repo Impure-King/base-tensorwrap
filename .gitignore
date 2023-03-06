@@ -27,3 +27,9 @@ tensorwrap.egg-info/PKG-INFO
 tensorwrap.egg-info/requires.txt
 tensorwrap.egg-info/SOURCES.txt
 tensorwrap.egg-info/top_level.txt
+.idea/modules.xml
+.idea/vcs.xml
+.idea/workspace.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/base-tensorwrap.iml
