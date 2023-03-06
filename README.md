@@ -85,7 +85,7 @@ class CheckPoint(Module):
 
 4. The JIT compilation is currently double of TensorFlow's on big models. However, the speed up is immense.
 
-5. Graph execution is currently not availible, which means that all exported models can only be deployed within a python environment.
+5. Graph execution is currently not available, which means that all exported models can only be deployed within a python environment.
 
 
 ### Installation
