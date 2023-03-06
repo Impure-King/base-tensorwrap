@@ -36,12 +36,22 @@ class Model(Module):
             if isinstance(_obj, tf.nn.layers.Layer):
                 self.layers.append(_obj)
         # Creating different objects for all layers:
+        for i in vars(self):
+            _object = vars(self)[i]
+            if isinstance(_object, tf.nn.layers.Layer):
+                self.layers.append(_object)
+
         for layer in self.layers:
             self.layers.remove(layer)
             if layer in self.layers:
                 self.layers.append(copy.deepcopy(layer))
             else:
                 self.layers.append(layer)
+        
+        # Doesn't offer any speed ups:
+        # for i in range(len(self.layers)-1):
+        #     self.layers[i+1].build(tf.shape(self.layers[i].units))
+        #     print("true")
 
 
     def train_step(self,
@@ -55,14 +65,32 @@ class Model(Module):
         self.layers = self.optimizer.apply_gradients(grads, layer)
         return metric, loss
 
+    # Various reusable verbose functions:
+    def __verbose0(self, epoch, epochs, loss, metric):
+        return 0
+
+    def __verbose1(self, epoch, epochs, loss, metric):
+        print(f"Epoch {epoch}|{epochs} \n"
+                f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
+    
+    def __verbose2(self, epoch, epochs, loss, metric):
+        print(f"Epoch {epoch}|{epochs} \t\t\t Loss: {loss:10.5f}\t\t\t     Metric: {metric:10.5f}")
+
     def fit(self,
             x,
             y,
-            epochs=1):
+            epochs=1,
+            verbose = 1):
+        if verbose==0:
+            print_func=self.__verbose0
+        elif verbose==1:
+            print_func=self.__verbose1
+        else:
+            print_func=self.__verbose2
+        
         for epoch in range(1, epochs+1):
             metric, loss = self.train_step(x, y, self.layers)
-            print(f"Epoch {epoch}|{epochs} \n"
-                f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
+            print_func(epoch=epoch, epochs=epochs, loss=loss, metric=metric)
     
     def evaluate(self,
                  x,
@@ -70,8 +98,7 @@ class Model(Module):
         prediction = self.__call__(x)
         metric = self.metrics(y_true, prediction)
         loss = self.loss_fn(y_true, prediction)
-        print(f"Epoch 1|1 \n"
-                  f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
+        self.__verbose1(epoch=1, epochs=1, loss=loss, metric=metric)
 
     # Add a precision counter soon.
     def predict(self, x: Array, precision = None):
@@ -87,7 +114,6 @@ class Sequential(Model):
     def __init__(self, layers=None) -> None:
         super().__init__()
         self.layers = [] if layers is None else layers
-        self.trainable_variables = []
 
     def add(self, layer):
         self.layers.append(layer)

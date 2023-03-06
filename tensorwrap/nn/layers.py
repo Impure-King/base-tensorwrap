@@ -7,6 +7,7 @@ import tensorwrap as tf
 import jax.numpy as jnp
 from random import randint
 
+# Custom Layer
 
 class Layer(Module):
     """A base layer class that is used to create new JIT enabled layers.
@@ -38,13 +39,6 @@ class Layer(Module):
             key = jax.random.PRNGKey(randint(1, 10))
             return jax.random.uniform(key, shape, dtype = tf.float32)
 
-    def build(self, input_shape):
-        input_dims = len(input_shape)
-        if input_dims <= 1:
-            raise ValueError("Input to the Dense layer has dimensions less than 1. \n"
-                             "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
-        self.trainable_variables = [self.kernel, self.bias]
-        self.built = True
 
     def call(self) -> None:
         # Must be defined to satisfy arbitrary method.
@@ -54,10 +48,21 @@ class Layer(Module):
     def __call__(self, inputs):
         # This is to compile, in not built.
         if not self.built:
-            self.build(inputs.shape)
+            self.build(tf.shape(inputs))
         out = self.call(inputs)
         return out
 
+    # Previous build is depracated.
+    # def build(self, input_shape, input_check: bool = True):
+    #     input_dims = len(input_shape)
+    #     if input_dims <= 1 and input_check:
+    #         print("Input to the Dense layer has dimensions less than 1. \n"
+    #               "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
+    #     self.trainable_variables = [self.kernel, self.bias]
+    #     self.built = True
+
+
+# Dense Layer:
 
 class Dense(Layer):
     def __init__(self,
@@ -86,17 +91,20 @@ class Dense(Layer):
                                      bias_constraint=bias_constraint,
                                      dynamic=not tf.test.is_device_available())
 
-    def build(self, input_shape):
-        self.kernel = self.add_weights(shape=(input_shape[-1], self.units),
+    def build(self, input_shape:int):
+        self.kernel = self.add_weights(shape=(input_shape, self.units),
                                        initializer=self.kernel_initializer,
                                        name="kernel")
         self.bias = self.add_weights(shape=(self.units),
                                      initializer=self.bias_initializer,
                                      name="bias")
-        super().build(input_shape)
+        self.trainable_variables = [self.kernel, self.bias]
+        self.built = True
 
     def call(self, inputs: Array) -> Array:
         if self.use_bias == True:
             return jnp.matmul(inputs, self.trainable_variables[0]) + self.trainable_variables[1]
         else:
             return jnp.matmul(inputs, self.trainable_variables[0], inputs)
+
+
