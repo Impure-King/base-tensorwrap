@@ -1,9 +1,18 @@
-from jax import numpy as np
+from jax import (numpy as np,
+                 jit,
+                 Array)
 
-def expand_dims(array, axis):
-    if axis==1:
-        array = array.reshape(-1, 1)
-    elif axis==0:
-        array = array.reshape(1, -1)
+@jit
+def shape(array: Array):
+    r"""Returns the last dimension of the array, list, or integer. Used internally for Dense Layers and Compilations.
+    
+    Arguments:
+        array (Array): Array for size computation
+    """
+    try:
+        return np.shape(array)[-1]
+    except:
+        return array
 
-    return array
+
+    
