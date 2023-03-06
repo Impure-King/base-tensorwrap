@@ -21,6 +21,7 @@ from tensorwrap.experimental.wrappers import function
 from tensorwrap.ops import shape
 
 # JAX Built-ins:
+from jax import disable_jit
 from jax.numpy import (array as Variable,
                        arange as range,
                        expand_dims,
