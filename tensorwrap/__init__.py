@@ -18,13 +18,18 @@ from tensorwrap.module import Module
 from tensorwrap.version import __version__
 from tensorwrap.experimental.serialize import save_model, load_model
 from tensorwrap.experimental.wrappers import function
-from tensorwrap.ops import (expand_dims,
-                            shape)
+from tensorwrap.ops import shape
 
 # JAX Built-ins:
-from jax.numpy import array as Variable
-from jax.numpy import float16, float32, float64
-from jax.numpy import int16, int32, int64
-from jax.numpy import matmul, square, abs, mean, sum
-from jax.numpy import reshape
-from jax.numpy import arange as range
+from jax.numpy import (array as Variable,
+                       arange as range,
+                       expand_dims,
+                       matmul,
+                       square,
+                       abs,
+                       mean,
+                       sum,
+                       reshape,
+                       float16,
+                       float32,
+                       float64)
