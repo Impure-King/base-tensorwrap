@@ -20,7 +20,6 @@ class Layer(Module):
         self.trainable_variables = []
         self.built=False
 
-    @classmethod
     def add_weights(self, shape=None, initializer='glorot_uniform', trainable=True, name=None):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
         ---------
@@ -54,12 +53,12 @@ class Layer(Module):
         return out
 
     # Altered and not final
-    def build(self, input_shape = None, input_check: bool = True):
+    def build(self, kernel, bias):
         # input_dims = len(input_shape)
         # if input_dims <= 1 and input_check:
         #     print("Input to the Dense layer has dimensions less than 1. \n"
         #           "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
-        self.trainable_variables = [self.kernel, self.bias]
+        self.trainable_variables = [kernel, bias]
         self.built = True
 
 
@@ -102,7 +101,7 @@ class Dense(Layer):
                                      name="bias")
         else:
             self.bias = None
-        super().build()
+        super().build(self.kernel, self.bias)
 
     def call(self, inputs: Array) -> Array:
         return jnp.matmul(inputs, self.trainable_variables[0]) + self.trainable_variables[1]

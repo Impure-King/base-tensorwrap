@@ -32,10 +32,6 @@ class Model(Module):
         self.optimizer = optimizer
         self.metrics = metrics if metrics != None else loss
 
-        for i in vars(self):
-            _obj = vars(self)[i]
-            if isinstance(_obj, tf.nn.layers.Layer):
-                self.layers.append(_obj)
         # Creating different objects for all layers:
         for i in vars(self):
             _object = vars(self)[i]
@@ -50,9 +46,9 @@ class Model(Module):
                 self.layers.append(layer)
         
         # Doesn't offer any speed ups:
-        # for i in range(len(self.layers)-1):
-        #     self.layers[i+1].build(tf.shape(self.layers[i].units))
-        #     print("true")
+        for i in range(len(self.layers)-1):
+            self.layers[i+1].build(tf.shape(self.layers[i].units))
+            self.trainable_variables.append(self.layers[i+1].trainable_variables)
 
 
     def train_step(self,
@@ -91,6 +87,7 @@ class Model(Module):
         for epoch in range(1, epochs+1):
             metric, loss = self.train_step(x, y, self.layers)
             print_func(epoch=epoch, epochs=epochs, loss=loss, metric=metric)
+            # print(self.trainable_variables)
     
     def evaluate(self,
                  x,
