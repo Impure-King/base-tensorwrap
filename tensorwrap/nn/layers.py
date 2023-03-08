@@ -14,10 +14,11 @@ class Layer(Module):
        Acts as the subclass for all layers, to ensure that they are converted in PyTrees."""
 
     def __init__(self, trainable=True, dtype=None, **kwargs) -> None:
-        self.trainable = trainable
+        super().__init__()
         self.dtype = dtype
         self.kwargs = kwargs
         self.trainable_variables = []
+        self.built=False
 
     @classmethod
     def add_weights(self, shape=None, initializer='glorot_uniform', trainable=True, name=None):
@@ -52,14 +53,14 @@ class Layer(Module):
         out = self.call(inputs)
         return out
 
-    # Previous build is depracated.
-    # def build(self, input_shape, input_check: bool = True):
-    #     input_dims = len(input_shape)
-    #     if input_dims <= 1 and input_check:
-    #         print("Input to the Dense layer has dimensions less than 1. \n"
-    #               "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
-    #     self.trainable_variables = [self.kernel, self.bias]
-    #     self.built = True
+    # Altered and not final
+    def build(self, input_shape = None, input_check: bool = True):
+        # input_dims = len(input_shape)
+        # if input_dims <= 1 and input_check:
+        #     print("Input to the Dense layer has dimensions less than 1. \n"
+        #           "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
+        self.trainable_variables = [self.kernel, self.bias]
+        self.built = True
 
 
 # Dense Layer:
@@ -78,7 +79,7 @@ class Dense(Layer):
                  bias_constraint=None,
                  *args,
                  **kwargs):
-        self.built = False
+        super().__init__()
         super(Module, self).__init__(units=units,
                                      activation=activation,
                                      use_bias=use_bias,
@@ -95,16 +96,15 @@ class Dense(Layer):
         self.kernel = self.add_weights(shape=(input_shape, self.units),
                                        initializer=self.kernel_initializer,
                                        name="kernel")
-        self.bias = self.add_weights(shape=(self.units),
+        if self.use_bias:
+            self.bias = self.add_weights(shape=(self.units),
                                      initializer=self.bias_initializer,
                                      name="bias")
-        self.trainable_variables = [self.kernel, self.bias]
-        self.built = True
+        else:
+            self.bias=0
+        super().build()
 
     def call(self, inputs: Array) -> Array:
-        if self.use_bias == True:
-            return jnp.matmul(inputs, self.trainable_variables[0]) + self.trainable_variables[1]
-        else:
-            return jnp.matmul(inputs, self.trainable_variables[0], inputs)
+        return jnp.matmul(inputs, self.trainable_variables[0]) + self.trainable_variables[1]
 
 
