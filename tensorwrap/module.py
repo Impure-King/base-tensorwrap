@@ -38,6 +38,7 @@ class Module(BaseModule):
     from jax and accelerate the training process."""
     aux_data = {}
     true = True
+    # Please improve in future versions
     def tree_flatten(self):
         dic = vars(self).copy()
         try:

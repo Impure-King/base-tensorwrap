@@ -101,7 +101,7 @@ class Dense(Layer):
                                      initializer=self.bias_initializer,
                                      name="bias")
         else:
-            self.bias=0
+            self.bias = None
         super().build()
 
     def call(self, inputs: Array) -> Array:

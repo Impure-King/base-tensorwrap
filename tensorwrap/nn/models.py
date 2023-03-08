@@ -9,6 +9,7 @@ class Model(Module):
     """ Main superclass for all models and loads any object as a PyTree with training and inference features."""
 
     def __init__(self, *args, **kwargs) -> None:
+        super().__init__()
         self.args = args
         self.kwargs = kwargs
         self.trainable_variables = []
@@ -61,7 +62,7 @@ class Model(Module):
         y_pred = self.__call__(x)
         metric = self.metrics(y, y_pred)
         loss = self.loss_fn(y, y_pred)
-        grads = jax.grad(self.loss_fn)(tf.mean(y), tf.mean(y_pred))
+        grads = jax.value(self.loss_fn)(tf.mean(y), tf.mean(y_pred))
         self.layers = self.optimizer.apply_gradients(grads, layer)
         return metric, loss
 
