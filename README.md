@@ -39,15 +39,15 @@ from tensorwrap import nn
 class Dense(nn.layers.Layer):
     def __init__(self, units) -> None:
         super().__init__() # Needed for making it JIT compatible.
-        self.units = units # Defining the output shape.
-        self.built = True # Needed to avoid recompilation.
+        self.units = units # Defining the output shape
   
     def build(self, input_shape: tuple) -> None:
-        self.kernel = self.add_weights([input_shape[-1], self.units],
+        input_shape = tf.shape(input_shape) # Getting appropriate input shape
+        self.kernel = self.add_weights([input_shape, self.units],
                                        initializer = 'glorot_uniform')
         self.bias = self.add_weights([self.units],
                                      initializer = 'zeros')
-        super().build(input_shape) # Needed to check dimensions and build.
+        super().build(self.kernel, self.bias) # Needed to add the kernel to model.
     
     # Use call not __call__ to define the flow. No tf.function needed either.
     def call(self, inputs):

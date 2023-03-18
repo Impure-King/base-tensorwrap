@@ -58,7 +58,10 @@ class Layer(Module):
         # if input_dims <= 1 and input_check:
         #     print("Input to the Dense layer has dimensions less than 1. \n"
         #           "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
-        self.trainable_variables = [kernel, bias]
+        self.trainable_variables = {
+            0: kernel, 
+            1 : bias
+        }
         self.built = True
 
 
@@ -92,6 +95,7 @@ class Dense(Layer):
                                      dynamic=not tf.test.is_device_available())
 
     def build(self, input_shape:int):
+        input_shape = tf.shape(input_shape)
         self.kernel = self.add_weights(shape=(input_shape, self.units),
                                        initializer=self.kernel_initializer,
                                        name="kernel")

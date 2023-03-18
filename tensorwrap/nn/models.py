@@ -47,7 +47,7 @@ class Model(Module):
         
         # Doesn't offer any speed ups:
         for i in range(len(self.layers)-1):
-            self.layers[i+1].build(tf.shape(self.layers[i].units))
+            self.layers[i+1].build(self.layers[i].units)
             self.trainable_variables.append(self.layers[i+1].trainable_variables)
 
 
