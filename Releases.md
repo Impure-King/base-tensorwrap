@@ -4,6 +4,7 @@
 1. New Layer subclasses have been added: 
     1. ``tensorwrap.nn.layers.Locked`` - Implements a layer identical to the ``tensorwrap.nn.layers.Layer``, but have frozen weights.
     2. ``tensorwrap.nn.layers.Lambda`` - Superclasses layers with no variables, but instead certain functionality.
+    3. Model speed has been increased 60% for cpu devices.
 
 **Minor Changes**
 1. __In Progress__: Adding an experimental feature that converts prebuilt ``tensorwrap.nn.layers.Layer`` objects into ``tensorwrap.nn.layers.Locked`` objects, while preserving state.

@@ -32,10 +32,6 @@ class Model(Module):
         self.optimizer = optimizer
         self.metrics = metrics if metrics != None else loss
 
-        for i in vars(self):
-            _obj = vars(self)[i]
-            if isinstance(_obj, tf.nn.layers.Layer):
-                self.layers.append(_obj)
         # Creating different objects for all layers:
         for i in vars(self):
             _object = vars(self)[i]
@@ -50,30 +46,32 @@ class Model(Module):
                 self.layers.append(layer)
         
         # Doesn't offer any speed ups:
-        # for i in range(len(self.layers)-1):
-        #     self.layers[i+1].build(tf.shape(self.layers[i].units))
-        #     print("true")
+        for i in range(len(self.layers)-1):
+            self.layers[i+1].build(self.layers[i].units)
+            self.trainable_variables.append(self.layers[i+1].trainable_variables)
 
 
     def train_step(self,
                    x,
                    y=None,
                    layer=None):
-        y_pred = self.__call__(x)
-        metric = self.metrics(y, y_pred)
-        loss, grads = jax.value_and_grad(self.loss_fn)(tf.mean(y), tf.mean(y_pred))
+        self._y_pred = self.__call__(x)
+        grads = jax.grad(self.loss_fn)(tf.mean(y), tf.mean(self._y_pred))
         self.layers = self.optimizer.apply_gradients(grads, layer)
-        return metric, loss
 
     # Various reusable verbose functions:
-    def __verbose0(self, epoch, epochs, loss, metric):
+    def __verbose0(self, epoch, epochs, y_true):
         return 0
 
-    def __verbose1(self, epoch, epochs, loss, metric):
+    def __verbose1(self, epoch, epochs, y_true):
+        metric = self.metrics(y_true, self._y_pred)
+        loss = self.loss_fn(y_true, self._y_pred)
         print(f"Epoch {epoch}|{epochs} \n"
                 f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
     
-    def __verbose2(self, epoch, epochs, loss, metric):
+    def __verbose2(self, epoch, epochs, y_true):
+        metric = self.metrics(y_true, self._y_pred)
+        loss = self.loss_fn(y_true, self._y_pred)
         print(f"Epoch {epoch}|{epochs} \t\t\t Loss: {loss:10.5f}\t\t\t     Metric: {metric:10.5f}")
 
     def fit(self,
@@ -89,8 +87,9 @@ class Model(Module):
             print_func=self.__verbose2
         
         for epoch in range(1, epochs+1):
-            metric, loss = self.train_step(x, y, self.layers)
-            print_func(epoch=epoch, epochs=epochs, loss=loss, metric=metric)
+            self.train_step(x, y, self.layers)
+            print_func(epoch=epoch, epochs=epochs, y_true=y)
+            # print(self.trainable_variables)
     
     def evaluate(self,
                  x,
