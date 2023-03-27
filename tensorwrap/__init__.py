@@ -38,4 +38,8 @@ from jax.numpy import (array as Variable,
                        float64,
                        eye as identity,
                        shape,
-                       prod)
+                       prod,
+                       max,
+                       min,
+                       maximum,
+                       minimum)

@@ -62,6 +62,14 @@ class Layer(Module):
 # Dense Layer:
 
 class Dense(Layer):
+    """ A fully connected layer that applies linear transformation to the inputs.
+    
+    Args:
+        units (int): A positive integer representing the output shape.
+        activation (Optional, str or Activation): Activation function to use. Defaults to None.
+        use_bias (Optional, bool): A boolean signifying whether to include a bias term.
+        kernel_initializer (Optional, str or Initializer)
+    """
     def __init__(self,
                  units,
                  activation=None,
@@ -110,25 +118,23 @@ class Dense(Layer):
 # Non-trainable Layers:
 
 class Lambda(Module):
-    """A layer that applies a callable to the input tensor.
+    """A non-trainable layer that applies a callable to the input tensor.
 
     This layer is useful for applying custom functions or operations to the input tensor
-    without introducing any trainable variables.
+    without introducing any trainable variables. Additionally, it acts as a superclass for custom
+    nontrainable layers.
 
     Args:
         func (callable): The function or operation to apply to the input tensor. Defaults to None.
 
-    Example:
+    Example 1:
         >>> def add_one(x):
         ...     return x + 1
         >>> layer = Lambda(add_one)
         >>> layer(torch.tensor([1, 2, 3]))
         tensor([2, 3, 4])
     
-
-    Sidenote: Often used as subclass for non-trainable layers.
-
-    Example:
+    Example 2:
         >>> import tensorwrap as tf
         >>> class Flatten(tf.nn.Lambda):
         ...     def __init__(self):
@@ -144,6 +150,10 @@ class Lambda(Module):
         >>> x = tf.reshape(x, (1, 3, 11111, 3))
         >>> Flatten()(x).shape
         (1, 99999)
+    
+    Inherits from:
+        Module
+
     """
     def __init__(self, func = None, **kwargs):
         super().__init__()
@@ -163,12 +173,14 @@ class Lambda(Module):
         """
         return self.func(inputs)
 
+# Flatten Layer:
+
 class Flatten(Lambda):
     """
     A layer that flattens the input tensor, collapsing all dimensions except for the batch dimension.
 
     Args:
-        input_shape: (Optional) A tuple specifying the shape of the input tensor. If specified, the layer will use this shape to determine the output size. Otherwise, the layer will compute the output size by flattening the remaining dimensions after the batch dimension.
+        input_shape (Optional, Array): A tuple specifying the shape of the input tensor. If specified, the layer will use this shape to determine the output size. Otherwise, the layer will compute the output size by flattening the remaining dimensions after the batch dimension.
 
     Example:
         >>> # Create a Flatten layer with an input shape of (None, 28, 28, 3)
@@ -178,6 +190,10 @@ class Flatten(Lambda):
         >>> y = flatten_layer(x)
         >>> print(y.shape)
         (None, 2352)
+    
+    Inherits from:
+        Module
+        Lambda
     """
     def __init__(self, input_shape = None):
         super().__init__()
