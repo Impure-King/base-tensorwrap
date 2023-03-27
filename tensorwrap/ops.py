@@ -3,7 +3,7 @@ from jax import (numpy as np,
                  Array)
 
 @jit
-def shape(array: Array):
+def last_dim(array: Array):
     r"""Returns the last dimension of the array, list, or integer. Used internally for Dense Layers and Compilations.
     
     Arguments:

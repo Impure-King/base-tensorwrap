@@ -3,6 +3,8 @@ from abc import ABCMeta, abstractmethod
 from jax import jit
 from jax.tree_util import register_pytree_node_class
 
+# All classes allowed for export.
+__all__ = ["Module"]
 
 class BaseModule(metaclass=ABCMeta):
     """ This is the most basic template that defines all subclass items to be a pytree and accept arguments flexibly.
@@ -36,8 +38,13 @@ class Module(BaseModule):
     """This is the base class for all types of functions and components.
     This is going to be a static type component, in order to allow jit.compile
     from jax and accelerate the training process."""
-    aux_data = {}
-    true = True
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.aux_data = {}
+        # Creating trainable_variables:
+        self.trainable_variables = {}
+
     # Please improve in future versions
     def tree_flatten(self):
         dic = vars(self).copy()
@@ -50,7 +57,6 @@ class Module(BaseModule):
         except:
             pass
         aux_data = self.aux_data
-        print(aux_data)
         children = vars(self).values()
         return (children, aux_data)
 

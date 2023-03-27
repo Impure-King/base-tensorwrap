@@ -18,7 +18,7 @@ from tensorwrap.module import Module
 from tensorwrap.version import __version__
 from tensorwrap.experimental.serialize import save_model, load_model
 from tensorwrap.experimental.wrappers import function
-from tensorwrap.ops import shape
+from tensorwrap.ops import last_dim
 
 # JAX Built-ins:
 from jax import (disable_jit,
@@ -36,4 +36,6 @@ from jax.numpy import (array as Variable,
                        float16,
                        float32,
                        float64,
-                       eye as identity)
+                       eye as identity,
+                       shape,
+                       prod)

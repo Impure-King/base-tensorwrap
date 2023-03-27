@@ -12,8 +12,8 @@ class Model(Module):
         super().__init__()
         self.args = args
         self.kwargs = kwargs
-        self.trainable_variables = []
-        self.layers = []
+        self._name_tracker = 0
+        self.trainable_layers = {}
 
     def call(self) -> Array:
         pass
@@ -30,26 +30,17 @@ class Model(Module):
         """Used to compile the nn model before training."""
         self.loss_fn = loss
         self.optimizer = optimizer
-        self.metrics = metrics if metrics != None else loss
+        self.metrics = metrics if metrics is not None else loss
 
-        # Creating different objects for all layers:
-        for i in vars(self):
-            _object = vars(self)[i]
+        for attr_name in dir(self):
+            _object = getattr(self, attr_name)
             if isinstance(_object, tf.nn.layers.Layer):
-                self.layers.append(_object)
-
-        for layer in self.layers:
-            self.layers.remove(layer)
-            if layer in self.layers:
-                self.layers.append(copy.deepcopy(layer))
-            else:
-                self.layers.append(layer)
-        
-        # Doesn't offer any speed ups:
-        for i in range(len(self.layers)-1):
-            self.layers[i+1].build(self.layers[i].units)
-            self.trainable_variables.append(self.layers[i+1].trainable_variables)
-
+                if _object.name == 'layer':
+                    _object.name = 'layer' + str(self._name_tracker)
+                    self._name_tracker += 1
+                if _object in self.trainable_layers.values():
+                    _object = copy.deepcopy(_object)
+                self.trainable_layers[_object.name] = _object
 
     def train_step(self,
                    x,
@@ -57,10 +48,10 @@ class Model(Module):
                    layer=None):
         self._y_pred = self.__call__(x)
         grads = jax.grad(self.loss_fn)(tf.mean(y), tf.mean(self._y_pred))
-        self.layers = self.optimizer.apply_gradients(grads, layer)
+        self.trainable_layers = self.optimizer.apply_gradients(grads, layer)
 
     # Various reusable verbose functions:
-    def __verbose0(self, epoch, epochs, y_true):
+    def __verbose0(self, *args, **kwargs):
         return 0
 
     def __verbose1(self, epoch, epochs, y_true):
@@ -77,6 +68,7 @@ class Model(Module):
     def fit(self,
             x,
             y,
+            batch_size = 32,
             epochs=1,
             verbose = 1):
         if verbose==0:
@@ -87,9 +79,8 @@ class Model(Module):
             print_func=self.__verbose2
         
         for epoch in range(1, epochs+1):
-            self.train_step(x, y, self.layers)
+            self.train_step(x, y, self.trainable_layers)
             print_func(epoch=epoch, epochs=epochs, y_true=y)
-            # print(self.trainable_variables)
     
     def evaluate(self,
                  x,
@@ -97,7 +88,7 @@ class Model(Module):
         prediction = self.__call__(x)
         metric = self.metrics(y_true, prediction)
         loss = self.loss_fn(y_true, prediction)
-        self.__verbose1(epoch=1, epochs=1, loss=loss, metric=metric)
+        self.__verbose1(epoch=1, epochs=1, y_true=y_true)
 
     # Add a precision counter soon.
     def predict(self, x: Array, precision = None):
@@ -113,6 +104,15 @@ class Sequential(Model):
     def __init__(self, layers=None) -> None:
         super().__init__()
         self.layers = [] if layers is None else layers
+        for _object in self.layers:
+            if isinstance(_object, tf.nn.layers.Layer):
+                if _object.name == 'layer':
+                    _object.name = 'layer' + str(self._name_tracker)
+                    self._name_tracker += 1
+                if _object in self.trainable_layers.values():
+                    _object = copy.deepcopy(_object)
+                self.trainable_layers[_object.name] = _object
+
 
     def add(self, layer):
         self.layers.append(layer)

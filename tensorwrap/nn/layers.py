@@ -7,18 +7,18 @@ import tensorwrap as tf
 import jax.numpy as jnp
 from random import randint
 
-# Custom Layer
+# Custom Trainable Layer
 
 class Layer(Module):
     """A base layer class that is used to create new JIT enabled layers.
        Acts as the subclass for all layers, to ensure that they are converted in PyTrees."""
 
-    def __init__(self, trainable=True, dtype=None, **kwargs) -> None:
+    def __init__(self, name = "layer", trainable=True, dtype=None, **kwargs) -> None:
         super().__init__()
         self.dtype = dtype
         self.kwargs = kwargs
-        self.trainable_variables = []
         self.built=False
+        self.name = name
 
     def add_weights(self, shape=None, initializer='glorot_uniform', trainable=True, name=None):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
@@ -48,20 +48,14 @@ class Layer(Module):
     def __call__(self, inputs):
         # This is to compile, in not built.
         if not self.built:
-            self.build(tf.shape(inputs))
+            self.build(tf.last_dim(inputs))
         out = self.call(inputs)
         return out
 
     # Altered and not final
     def build(self, kernel, bias):
-        # input_dims = len(input_shape)
-        # if input_dims <= 1 and input_check:
-        #     print("Input to the Dense layer has dimensions less than 1. \n"
-        #           "Use tf.expand_dims or tf.reshape(-1, 1) in order to expand dimensions.")
-        self.trainable_variables = {
-            0: kernel, 
-            1 : bias
-        }
+        self.trainable_variables['w'] = kernel
+        self.trainable_variables['b'] = bias
         self.built = True
 
 
@@ -79,6 +73,7 @@ class Dense(Layer):
                  activity_regularizer=None,
                  kernel_constraint=None,
                  bias_constraint=None,
+                 name = "layer",
                  *args,
                  **kwargs):
         super().__init__()
@@ -92,10 +87,11 @@ class Dense(Layer):
                                      activity_regularizer=activity_regularizer,
                                      kernel_constraint=kernel_constraint,
                                      bias_constraint=bias_constraint,
+                                     name = name,
                                      dynamic=not tf.test.is_device_available())
 
     def build(self, input_shape:int):
-        input_shape = tf.shape(input_shape)
+        input_shape = tf.last_dim(input_shape)
         self.kernel = self.add_weights(shape=(input_shape, self.units),
                                        initializer=self.kernel_initializer,
                                        name="kernel")
@@ -108,6 +104,99 @@ class Dense(Layer):
         super().build(self.kernel, self.bias)
 
     def call(self, inputs: Array) -> Array:
-        return jnp.matmul(inputs, self.trainable_variables[0]) + self.trainable_variables[1]
+        return jnp.matmul(inputs, self.trainable_variables['w']) + self.trainable_variables['b']
 
 
+# Non-trainable Layers:
+
+class Lambda(Module):
+    """A layer that applies a callable to the input tensor.
+
+    This layer is useful for applying custom functions or operations to the input tensor
+    without introducing any trainable variables.
+
+    Args:
+        func (callable): The function or operation to apply to the input tensor. Defaults to None.
+
+    Example:
+        >>> def add_one(x):
+        ...     return x + 1
+        >>> layer = Lambda(add_one)
+        >>> layer(torch.tensor([1, 2, 3]))
+        tensor([2, 3, 4])
+    
+
+    Sidenote: Often used as subclass for non-trainable layers.
+
+    Example:
+        >>> import tensorwrap as tf
+        >>> class Flatten(tf.nn.Lambda):
+        ...     def __init__(self):
+        ...         super().__init__()
+        ...     
+        ...     def call(self, inputs):
+        ...         batch_size = tf.shape(inputs)[0]
+        ...         input_size = tf.shape(inputs)[1:]
+        ...         output_size = tf.prod(tf.Variable(input_shape))
+        ...         return tf.reshape(inputs, (batch_size, output_size))
+        >>> x = tf.range(1, 1e5)
+        >>> x = tf.range(1, int(1e5))
+        >>> x = tf.reshape(x, (1, 3, 11111, 3))
+        >>> Flatten()(x).shape
+        (1, 99999)
+    """
+    def __init__(self, func = None, **kwargs):
+        super().__init__()
+        self.func = func
+
+    def __call__(self, inputs):
+        return self.call(inputs)
+    
+    def call(self, inputs):
+        """Applies the callable to the input tensor.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            The output tensor after applying the callable to the input tensor.
+        """
+        return self.func(inputs)
+
+class Flatten(Lambda):
+    """
+    A layer that flattens the input tensor, collapsing all dimensions except for the batch dimension.
+
+    Args:
+        input_shape: (Optional) A tuple specifying the shape of the input tensor. If specified, the layer will use this shape to determine the output size. Otherwise, the layer will compute the output size by flattening the remaining dimensions after the batch dimension.
+
+    Example:
+        >>> # Create a Flatten layer with an input shape of (None, 28, 28, 3)
+        >>> flatten_layer = tf.nn.layers.Flatten()
+        ...
+        >>> # Apply the Flatten layer to a tensor of shape (None, 28, 28, 3)
+        >>> y = flatten_layer(x)
+        >>> print(y.shape)
+        (None, 2352)
+    """
+    def __init__(self, input_shape = None):
+        super().__init__()
+        self.shape = input_shape
+    
+    def call(self, inputs):
+        """
+        Flattens the input tensor, collapsing all dimensions except for the batch dimension.
+
+        Args:
+            inputs: Input tensor.
+
+        Returns:
+            Flattened tensor with shape (batch_size, output_size).
+        """
+        batch_size = tf.shape(inputs)[0]
+        if self.shape is not None:
+            output_size = self.shape
+        else:
+            input_shape = tf.shape(inputs)[1:]
+            output_size = tf.prod(tf.Variable(input_shape))
+        return tf.reshape(inputs, (batch_size, output_size))
