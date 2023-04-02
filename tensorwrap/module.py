@@ -26,7 +26,6 @@ class BaseModule(metaclass=ABCMeta):
     def __init_subclass__(cls) -> None:
         register_pytree_node_class(cls)
         # cls.call = jit(cls.call)
-        print("Hello World!")
 
     def __call__(self, *args, **kwargs) -> Any:
         return self.call(*args, **kwargs)

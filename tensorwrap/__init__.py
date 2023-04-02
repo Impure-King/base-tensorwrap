@@ -18,7 +18,7 @@ from tensorwrap.module import Module
 from tensorwrap.version import __version__
 from tensorwrap.experimental.serialize import save_model, load_model
 from tensorwrap.experimental.wrappers import function
-from tensorwrap.ops import last_dim
+from tensorwrap.ops import last_dim, comprehend
 
 # JAX Built-ins:
 from jax import (disable_jit,

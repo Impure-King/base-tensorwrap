@@ -17,6 +17,25 @@ class Model(Module):
         self._name_tracker = 0
         self.trainable_layers = {}
 
+        # Creating trainable_variables:
+        for attr_name in dir(self):
+            _object = getattr(self, attr_name)
+            if isinstance(_object, list):
+                for i in _object:    
+                    self.__layer_checker(i)
+            else:
+                self.__layer_checker(_object)
+            
+
+    def __layer_checker(self, _object):
+        if isinstance(_object, tf.nn.layers.Layer):
+                if _object.name == 'layer':
+                    _object.name = 'layer ' + str(self._name_tracker)
+                    self._name_tracker += 1
+                if _object in self.trainable_layers.values():
+                    _object = copy.deepcopy(_object)
+                self.trainable_layers[_object.name] = _object
+
     def compile(self,
                 loss,
                 optimizer,
@@ -26,37 +45,24 @@ class Model(Module):
         self.optimizer = optimizer
         self.metrics = metrics if metrics is not None else loss
 
-        for attr_name in dir(self):
-            _object = getattr(self, attr_name)
-            if isinstance(_object, tf.nn.layers.Layer):
-                if _object.name == 'layer':
-                    _object.name = 'layer ' + str(self._name_tracker)
-                    self._name_tracker += 1
-                if _object in self.trainable_layers.values():
-                    _object = copy.deepcopy(_object)
-                self.trainable_layers[_object.name] = _object
-
     def train_step(self,
                    x,
                    y=None,
                    layer=None):
         self._y_pred = self.__call__(x)
-        grads = jax.grad(self.loss_fn)(tf.mean(y), tf.mean(self._y_pred))
+        loss, grads = jax.value_and_grad(self.loss_fn)(tf.mean(y), tf.mean(self._y_pred))
         self.trainable_layers = self.optimizer.apply_gradients(grads, layer)
+        return loss
 
     # Various reusable verbose functions:
     def __verbose0(self, *args, **kwargs):
         return 0
 
-    def __verbose1(self, epoch, epochs, y_true):
-        metric = self.metrics(y_true, self._y_pred)
-        loss = self.loss_fn(y_true, self._y_pred)
+    def __verbose1(self, epoch, epochs, metric, loss):
         print(f"Epoch {epoch}|{epochs} \n"
                 f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
     
-    def __verbose2(self, epoch, epochs, y_true):
-        metric = self.metrics(y_true, self._y_pred)
-        loss = self.loss_fn(y_true, self._y_pred)
+    def __verbose2(self, epoch, epochs, metric, loss):
         print(f"Epoch {epoch}|{epochs} \t\t\t Loss: {loss:10.5f}\t\t\t     Metric: {metric:10.5f}")
 
     def fit(self,
@@ -71,10 +77,13 @@ class Model(Module):
             print_func=self.__verbose1
         else:
             print_func=self.__verbose2
-        
+        hist = {}
         for epoch in range(1, epochs+1):
-            self.train_step(x, y, self.trainable_layers)
-            print_func(epoch=epoch, epochs=epochs, y_true=y)
+            loss = self.train_step(x, y, self.trainable_layers)
+            metric = self.metrics(y, self._y_pred)
+            print_func(epoch=epoch, epochs=epochs, metric=metric, loss=loss)
+            hist[epoch] = (loss, metric)
+        return hist
     
     def evaluate(self,
                  x,
@@ -104,16 +113,8 @@ class Model(Module):
 
 class Sequential(Model):
     def __init__(self, layers=None) -> None:
-        super().__init__()
         self.layers = [] if layers is None else layers
-        for _object in self.layers:
-            if isinstance(_object, tf.nn.layers.Layer):
-                if _object.name == 'layer':
-                    _object.name = 'layer' + str(self._name_tracker)
-                    self._name_tracker += 1
-                if _object in self.trainable_layers.values():
-                    _object = copy.deepcopy(_object)
-                self.trainable_layers[_object.name] = _object
+        super().__init__()
 
 
     def add(self, layer):

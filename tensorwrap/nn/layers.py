@@ -112,7 +112,7 @@ class Dense(Layer):
         super().build(self.kernel, self.bias)
 
     def call(self, inputs: Array) -> Array:
-        return jnp.matmul(inputs, self.trainable_variables['w']) + self.trainable_variables['b']
+        return jnp.dot(inputs, self.trainable_variables['w']) + self.trainable_variables['b']
 
 
 # Non-trainable Layers:
