@@ -16,6 +16,11 @@ class Model(Module):
         self.kwargs = kwargs
         self._name_tracker = 0
         self.trainable_layers = {}
+        self.__verbosetracker = (
+            self.__verbose0,
+            self.__verbose1,
+            self.__verbose2
+        )
 
         # Creating trainable_variables:
         for attr_name in dir(self):
@@ -71,12 +76,7 @@ class Model(Module):
             batch_size = 32,
             epochs=1,
             verbose = 1):
-        if verbose==0:
-            print_func=self.__verbose0
-        elif verbose==1:
-            print_func=self.__verbose1
-        else:
-            print_func=self.__verbose2
+        print_func = self.__verbosetracker[verbose]
         hist = {}
         for epoch in range(1, epochs+1):
             loss = self.train_step(x, y, self.trainable_layers)
