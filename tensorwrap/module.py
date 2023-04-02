@@ -23,10 +23,10 @@ class BaseModule(metaclass=ABCMeta):
             setattr(self, key, value)
 
     # This function is responsible for making the subclasses into PyTrees:
-    def __init_subclass__(cls, **kwargs) -> None:
-        super().__init_subclass__(**kwargs)
+    def __init_subclass__(cls) -> None:
         register_pytree_node_class(cls)
-        jit(cls)
+        # cls.call = jit(cls.call)
+        print("Hello World!")
 
     def __call__(self, *args, **kwargs) -> Any:
         return self.call(*args, **kwargs)
@@ -44,22 +44,13 @@ class Module(BaseModule):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.aux_data = {}
         # Creating trainable_variables:
         self.trainable_variables = {}
 
     # Please improve in future versions
     def tree_flatten(self):
         dic = vars(self).copy()
-        try:
-            for keys in dic:
-                if isinstance(dic[keys], str):
-                    self.aux_data[keys] = vars(self).pop(keys)
-                if isinstance(dic[keys], bool):
-                    self.aux_data[keys] = vars(self).pop(keys)
-        except:
-            pass
-        aux_data = self.aux_data
+        aux_data = {}
         children = vars(self).values()
         return (children, aux_data)
 

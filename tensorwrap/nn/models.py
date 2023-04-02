@@ -1,9 +1,11 @@
 """Sets of functions that allow you to define a custom model or a Sequential model."""
-import tensorwrap as tf
-from tensorwrap.module import Module
 import jax
-from jaxtyping import Array
 import copy
+import tensorwrap as tf
+
+from jaxtyping import Array
+from functools import partial
+from tensorwrap.module import Module
 
 class Model(Module):
     """ Main superclass for all models and loads any object as a PyTree with training and inference features."""
@@ -14,14 +16,6 @@ class Model(Module):
         self.kwargs = kwargs
         self._name_tracker = 0
         self.trainable_layers = {}
-
-    def call(self) -> Array:
-        pass
-
-    def __call__(self, *args) -> Array:
-        inputs = args[0]
-        outputs = self.call(inputs)
-        return outputs
 
     def compile(self,
                 loss,
@@ -36,7 +30,7 @@ class Model(Module):
             _object = getattr(self, attr_name)
             if isinstance(_object, tf.nn.layers.Layer):
                 if _object.name == 'layer':
-                    _object.name = 'layer' + str(self._name_tracker)
+                    _object.name = 'layer ' + str(self._name_tracker)
                     self._name_tracker += 1
                 if _object in self.trainable_layers.values():
                     _object = copy.deepcopy(_object)
@@ -99,6 +93,14 @@ class Model(Module):
             array = self.__call__(x)
         return array
 
+    def call(self) -> Array:
+        pass
+
+    def __call__(self, *args) -> Array:
+        inputs = args[0]
+        outputs = self.call(inputs)
+        return outputs
+
 
 class Sequential(Model):
     def __init__(self, layers=None) -> None:
@@ -116,7 +118,6 @@ class Sequential(Model):
 
     def add(self, layer):
         self.layers.append(layer)
-
 
     def call(self, x) -> Array:
         for layer in self.layers:

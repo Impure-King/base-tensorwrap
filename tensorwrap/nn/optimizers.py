@@ -6,6 +6,7 @@ from tensorwrap.module import Module
 class Optimizer(Module):
 
     def __init__(self, lr=0.01):
+        super().__init__()
         self.lr = lr
 
 
