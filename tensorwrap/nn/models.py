@@ -31,7 +31,9 @@ class Model(Module):
             else:
                 self.__layer_initializer(_object)
                 
-            
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        cls.forward = staticmethod(jax.jit(cls.forward))
 
     def __layer_initializer(self, _object):
         if isinstance(_object, tf.nn.layers.Layer):
@@ -105,6 +107,9 @@ class Model(Module):
             array = self.__call__(x)
         return array
 
+    def forward():
+        pass
+
     def call(self) -> Array:
         pass
 
@@ -122,6 +127,7 @@ class Sequential(Model):
 
     def add(self, layer):
         self.layers.append(layer)
+    
 
     def call(self, x) -> Array:
         for layer in self.layers:

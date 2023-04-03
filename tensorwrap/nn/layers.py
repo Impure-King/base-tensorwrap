@@ -6,6 +6,7 @@ from tensorwrap.module import Module
 import tensorwrap as tf
 import jax.numpy as jnp
 from random import randint
+import numpy as np
 
 # Custom Trainable Layer
 
@@ -20,6 +21,10 @@ class Layer(Module):
         self.name = name
         self.trainable = trainable
         self.trainable_variables = {}
+    
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        cls.forward = staticmethod(jit(cls.forward))
 
     def add_weights(self, shape=None, initializer='glorot_uniform', trainable=True, name=None):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
@@ -106,9 +111,12 @@ class Dense(Layer):
             self.bias = None
         super().build(self.kernel, self.bias)
 
+    def forward(inputs, trainable_variables):
+        out = jnp.dot(inputs, trainable_variables['w']) + trainable_variables['b']
+        return out
+
     def call(self, inputs: Array) -> Array:
-        out = jnp.dot(inputs, self.trainable_variables['w']) + self.trainable_variables['b']
-        return self.activation(out)
+        return self.activation(self.forward(inputs, self.trainable_variables))
 
 
 # Non-trainable Layers:
@@ -213,8 +221,8 @@ class Flatten(Lambda):
             output_size = self.shape
         else:
             input_shape = tf.shape(inputs)[1:]
-            output_size = tf.prod(tf.Variable(input_shape))
-        return tf.reshape(inputs, (batch_size, output_size))
+            output_size = np.prod(np.array(input_shape))
+        return np.reshape(inputs, (batch_size, output_size))
 
 
 class Concat(Lambda):
