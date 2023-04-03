@@ -23,4 +23,21 @@ def comprehend(hist, type: str):
     value = [a[dic[type]] for a in list(hist.values())]
     return list(hist.keys()), value
 
-    
+
+def jit_encoder(objects):
+    changed = []
+    for i in vars(objects):
+        _object = vars(objects)[i]
+        if isinstance(_object, str):
+            vars(objects)[i] = np.array([ord(c) for c in _object])
+            changed.append(i)
+        elif isinstance(_object, tuple) and isinstance(_object[0], str):
+            vars(objects)[i] = np.array([ord(c) for c in _object[0]])
+            changed.append(i)
+    return objects, changed
+
+def jit_decoder(objects, changed):
+    for i in changed:
+        vars(objects)[i] = ''.join([chr(n) for n in list(vars(objects)[i])])
+    return objects
+            

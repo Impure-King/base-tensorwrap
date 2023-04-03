@@ -11,13 +11,17 @@ class Activation(Module):
     @classmethod
     def get(self, name):
         self.dict = {
-            'relu': ReLU,
+            None : self.no_activate,
+            'relu': ReLU(),
         }
         try:
             return self.dict[name]
         except:
             raise ValueError(f"The activation function {name} doesn't exist.")
 
+    @staticmethod
+    def no_activate(inputs):
+        return inputs
     def call(self):
         pass
 
@@ -38,5 +42,8 @@ class ReLU(Activation):
             raise ValueError("Max_value cannot be negative.")
     
     def call(self, inputs):
-
-        return tf.minimum(tf.maximum(0, inputs - self.threshold), self.max_value)
+        part1 = tf.maximum(0, inputs - self.threshold)
+        if self.max_value is not None:
+            return tf.minimum(part1, self.max_value)
+        else:
+            return part1

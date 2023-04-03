@@ -27,19 +27,20 @@ class Model(Module):
             _object = getattr(self, attr_name)
             if isinstance(_object, list):
                 for i in _object:    
-                    self.__layer_checker(i)
+                    self.__layer_initializer(i)
             else:
-                self.__layer_checker(_object)
+                self.__layer_initializer(_object)
+                
             
 
-    def __layer_checker(self, _object):
+    def __layer_initializer(self, _object):
         if isinstance(_object, tf.nn.layers.Layer):
-                if _object.name == 'layer':
-                    _object.name = 'layer ' + str(self._name_tracker)
-                    self._name_tracker += 1
-                if _object in self.trainable_layers.values():
-                    _object = copy.deepcopy(_object)
-                self.trainable_layers[_object.name] = _object
+            if _object.name == 'layer' or _object.name[0] == 'layer':
+                _object.name = 'layer ' + str(self._name_tracker)
+                self._name_tracker += 1
+            if _object in self.trainable_layers.values():
+                _object = copy.deepcopy(_object)
+            self.trainable_layers[_object.name] = _object
 
     def compile(self,
                 loss,
@@ -59,6 +60,23 @@ class Model(Module):
         self.trainable_layers = self.optimizer.apply_gradients(grads, layer)
         return loss
 
+    def fit(self,
+            x,
+            y,
+            batch_size = 32,
+            epochs=1,
+            verbose = 1,
+            hist_return=False):
+        print_func = self.__verbosetracker[verbose]
+        hist = {}
+        for epoch in range(1, epochs+1):
+            loss = self.train_step(x, y, self.trainable_layers)
+            metric = self.metrics(y, self._y_pred)
+            print_func(epoch=epoch, epochs=epochs, metric=metric, loss=loss)
+            hist[epoch] = (loss, metric)
+        if hist_return:
+            return hist
+    
     # Various reusable verbose functions:
     def __verbose0(self, *args, **kwargs):
         return 0
@@ -70,21 +88,6 @@ class Model(Module):
     def __verbose2(self, epoch, epochs, metric, loss):
         print(f"Epoch {epoch}|{epochs} \t\t\t Loss: {loss:10.5f}\t\t\t     Metric: {metric:10.5f}")
 
-    def fit(self,
-            x,
-            y,
-            batch_size = 32,
-            epochs=1,
-            verbose = 1):
-        print_func = self.__verbosetracker[verbose]
-        hist = {}
-        for epoch in range(1, epochs+1):
-            loss = self.train_step(x, y, self.trainable_layers)
-            metric = self.metrics(y, self._y_pred)
-            print_func(epoch=epoch, epochs=epochs, metric=metric, loss=loss)
-            hist[epoch] = (loss, metric)
-        return hist
-    
     def evaluate(self,
                  x,
                  y_true):

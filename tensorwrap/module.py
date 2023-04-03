@@ -25,7 +25,6 @@ class BaseModule(metaclass=ABCMeta):
     # This function is responsible for making the subclasses into PyTrees:
     def __init_subclass__(cls) -> None:
         register_pytree_node_class(cls)
-        # cls.call = jit(cls.call)
 
     def __call__(self, *args, **kwargs) -> Any:
         return self.call(*args, **kwargs)
@@ -43,8 +42,9 @@ class Module(BaseModule):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Creating trainable_variables:
-        self.trainable_variables = {}
+    
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
 
     # Please improve in future versions
     def tree_flatten(self):

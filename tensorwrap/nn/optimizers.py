@@ -1,13 +1,15 @@
 import tensorwrap as tf
 import jax
 from tensorwrap.module import Module
-
+from functools import partial
 
 class Optimizer(Module):
 
     def __init__(self, lr=0.01):
         super().__init__()
         self.lr = lr
+        if not NotImplemented:
+            raise NotImplementedError
 
 
 class gradient_descent(Optimizer):
