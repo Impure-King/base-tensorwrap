@@ -2,12 +2,31 @@
 ## Version 0.0.0.6 Prerelease Notes:
 **Major Changes**
 1. New Layer subclasses have been added: 
-    1. ``tensorwrap.nn.layers.Locked`` - Implements a layer identical to the ``tensorwrap.nn.layers.Layer``, but have frozen weights.
-    2. ``tensorwrap.nn.layers.Lambda`` - Superclasses layers with no variables, but instead certain functionality.
-    3. Model speed has been increased 60% for cpu devices.
+    1. ``tensorwrap.nn.layers.Lambda`` - Superclasses layers with no variables, but instead certain functionality.
+2. Model speed has been increased:
+    1. 60% for cpu devices
+    2. 20% for gpu devices.
+3. New Layers have been added:
+    1. ``tensorwrap.nn.layers.Flatten`` - Returns a flatten input tensor.
+    2. ``tensorwrap.nn.layers.Concat`` - concatenates the input tensors and returns one output tensor.
+4. New Activation class has been added and ReLU activation is available to use.
+
 
 **Minor Changes**
-1. __In Progress__: Adding an experimental feature that converts prebuilt ``tensorwrap.nn.layers.Layer`` objects into ``tensorwrap.nn.layers.Locked`` objects, while preserving state.
+1. Jit compilation failure has been addressed.
+2. __In Progress:__ An autograph class has been added. It is currently unusable.
+3. New JAX built-in methods have been added.
+4. Docstrings for some methods have been improved.
+5. ``self.built`` for custom layers is no longer required, due to a inheritance fix in the ``tensorwrap.nn.layers.Layer`` module.
+6. ``tensorwrap.nn.models.Model.fit()`` now accepts verbose arguments to control output and returns a dictionary with training metrics.
+
+**Current Problems/Gotchas**
+1. Internal API still iterates layer by layer to implement gradient descent.
+2. Custom training loop and batching is currently unavailable.
+3. JSON serializable models are still not available.
+
+This version allows for non-weighted custom layers and has fixed performance/accessibility issues. Additionally, activations have been added and internal api has been cleaned to allow for further development. Please note that the next 
+version will continue to change the internals and many namespaces/code may be changed.
 
 <hr>
 
