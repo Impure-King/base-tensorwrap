@@ -19,6 +19,7 @@
 4. Docstrings for some methods have been improved.
 5. ``self.built`` for custom layers is no longer required, due to a inheritance fix in the ``tensorwrap.nn.layers.Layer`` module.
 6. ``tensorwrap.nn.models.Model.fit()`` now accepts verbose arguments to control output and returns a dictionary with training metrics.
+7. ``super.__init__()`` is now required to be declared after custom code in any custom layer that inherits from ``tensorwrap.nn.layers.Layer``.
 
 **Current Problems/Gotchas**
 1. Internal API still iterates layer by layer to implement gradient descent.
