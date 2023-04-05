@@ -38,8 +38,8 @@ from tensorwrap import nn
 
 class Dense(nn.layers.Layer):
     def __init__(self, units) -> None:
-        super().__init__() # Needed for making it JIT compatible.
         self.units = units # Defining the output shape
+        super().__init__() # Needed for making it JIT compatible.
   
     def build(self, input_shape: tuple) -> None:
         input_shape = tf.shape(input_shape) # Getting appropriate input shape
