@@ -9,21 +9,21 @@ class Activation(Module):
         pass
     
     @classmethod
-    def get(self, name):
-        self.dict = {
-            None : self.no_activate,
+    def get(cls, name):
+        cls.dict = {
+            None : cls.no_activate,
             'relu': ReLU(),
         }
         try:
-            return self.dict[name]
+            return cls.dict[name.lower()]
         except:
             raise ValueError(f"The activation function {name} doesn't exist.")
 
     @staticmethod
     def no_activate(inputs):
         return inputs
-    def call(self):
-        pass
+    def call(self, inputs):
+        raise NotImplementedError("Please implement the call function to define control flow.")
 
     def __call__(self, inputs):
         return self.call(inputs)

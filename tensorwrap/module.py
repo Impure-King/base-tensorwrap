@@ -1,3 +1,4 @@
+import jax
 from typing import Any
 from abc import ABCMeta, abstractmethod
 from jax import jit
@@ -46,10 +47,15 @@ class Module(BaseModule):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-    # Please improve in future versions
     def tree_flatten(self):
         dic = vars(self).copy()
         aux_data = {}
+
+        # Removes the dynamic elements:
+        for key in dic.keys():
+            if isinstance(dic[key], str):
+                aux_data[key] = vars(self).pop(key)
+
         children = vars(self).values()
         return (children, aux_data)
 

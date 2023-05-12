@@ -15,50 +15,63 @@ class Layer(Module):
     """A base layer class that is used to create new JIT enabled layers.
        Acts as the subclass for all layers, to ensure that they are converted in PyTrees."""
 
-    def __init__(self, name = "layer", trainable=True, dtype=None) -> None:
-        self.dtype = dtype
+    def __init__(self, name = "layer", trainable=True, *args, **kwargs) -> None:
         self.built = False
         self.name = name
         self.trainable = trainable
         self.trainable_variables = {}
     
+
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
         cls.forward = staticmethod(jit(cls.forward))
 
-    def add_weights(self, shape=None, initializer='glorot_uniform', trainable=True, name=None):
+    def add_weights(self, shape, initializer, name, trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
         ---------
         Arguments:
             - shape: Shape of the inputs and the units
             - initializer: The initial values of the weights
-            - trainable - Not required or implemented yet."""
-        if initializer[0] == 'zeros' or initializer == 'zeros':
-            return jnp.zeros(shape, dtype=jnp.float32)
+            - name: The name of the weight.
+            - trainable (Optional) - Not required or implemented yet. """
+        if initializer == 'zeros':
+            weight = jnp.zeros(shape, dtype=jnp.float32)
 
-        elif initializer[0] == 'glorot_normal' or initializer == 'glorot_uniform':
+        elif initializer == 'glorot_normal':
             key = jax.random.PRNGKey(randint(1, 10))
-            return jax.random.normal(key, shape, dtype=tf.float32)
+            weight = jax.random.normal(key, shape, dtype=tf.float32)
 
-        elif initializer[0] == 'glorot_uniform' or initializer == 'glorot_uniform':
+        elif initializer == 'glorot_uniform':
             key = jax.random.PRNGKey(randint(1, 10))
-            return jax.random.uniform(key, shape, dtype=tf.float32)
+            weight = jax.random.uniform(key, shape, dtype=tf.float32)
+        
+        else:
+            raise ValueError("Incorrect initializer is given.")
 
-    def call(self) -> None:
-        # Must be defined to satisfy arbitrary method.
-        pass
+        # Adding to the trainable variables:
+        self.trainable_variables[name] = weight
+        return weight
+
+    
+    def __repr__(self) -> str:
+        return self.name
 
     def __call__(self, inputs):
-        # This is to compile, in not built.
+        # This is to compile if not built.
         if not self.built:
             self.build(inputs)
+
         out = self.call(inputs)
         return out
 
-    # Altered and not final
-    def build(self, kernel, bias):
-        self.trainable_variables['w'] = kernel
-        self.trainable_variables['b'] = bias
+    def forward(self):
+        pass
+
+    def call(self, inputs):
+        raise NotImplementedError("Call Method Missing:\nPlease define the control flow in the call method.")
+
+    # Needed to make the layer built
+    def build(self, inputs = None):
         self.built = True
 
 
@@ -74,29 +87,22 @@ class Dense(Layer):
         kernel_initializer (Optional, str or Initializer)
     """
 
+    name_tracker = 0
+
     def __init__(self,
                  units,
-                 activation: str = None,
-                 use_bias=True,
-                 kernel_initializer='glorot_uniform',
-                 bias_initializer='zeros',
-                 kernel_regularizer=None,
-                 bias_regularizer=None,
-                 activity_regularizer=None,
-                 kernel_constraint=None,
-                 bias_constraint=None):
-        super().__init__()
+                 use_bias = True,
+                 kernel_initializer = 'glorot_uniform',
+                 bias_initializer = 'zeros',
+                 *args,
+                 **kwargs):
+        super().__init__(*args, **kwargs)
         self.units = units
-        self.use_bias = use_bias,
-        self.kernel_initializer = kernel_initializer,
-        self.bias_initializer = bias_initializer,
-        self.kernel_regularizer = kernel_regularizer,
-        self.bias_regularizer = bias_regularizer,
-        self.activity_regularizer = activity_regularizer,
-        self.kernel_constraint = kernel_constraint,
-        self.bias_constraint = bias_constraint,
-        self.dynamic = not tf.test.is_device_available()
-        self.activation = tf.nn.activations.Activation.get(activation)
+        self.use_bias = use_bias
+        self.kernel_initializer = kernel_initializer
+        self.bias_initializer = bias_initializer
+        self.name = 'dense ' + str(Dense.name_tracker)
+        Dense.name_tracker += 1
 
     def build(self, input_shape: int):
         input_shape = tf.last_dim(input_shape)
@@ -109,14 +115,14 @@ class Dense(Layer):
                                          name="bias")
         else:
             self.bias = None
-        super().build(self.kernel, self.bias)
+        super().build()
+    
 
-    def forward(inputs, trainable_variables):
-        out = jnp.dot(inputs, trainable_variables['w']) + trainable_variables['b']
-        return out
+    def forward(trainable_variables, inputs):
+        return inputs @ trainable_variables['kernel'] + trainable_variables['bias']
 
     def call(self, inputs: Array) -> Array:
-        return self.activation(self.forward(inputs, self.trainable_variables))
+        return self.forward(self.trainable_variables, inputs)
 
 
 # Non-trainable Layers:
@@ -177,7 +183,7 @@ class Lambda(Module):
         Returns:
             The output tensor after applying the callable to the input tensor.
         """
-        return self.func(inputs)
+        return self.func(inputs) if not self.func == None else inputs
 
 # Flatten Layer:
 
