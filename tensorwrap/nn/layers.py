@@ -19,12 +19,8 @@ class Layer(Module):
         self.built = False
         self.name = name
         self.trainable = trainable
-        self.trainable_variables = {}
+        self.trainable_variables = jax.tree_util.Partial(dict)()
     
-
-    def __init_subclass__(cls) -> None:
-        super().__init_subclass__()
-        cls.forward = staticmethod(jit(cls.forward))
 
     def add_weights(self, shape, initializer, name, trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
@@ -49,7 +45,8 @@ class Layer(Module):
             raise ValueError("Incorrect initializer is given.")
 
         # Adding to the trainable variables:
-        self.trainable_variables[name] = weight
+        if trainable:
+            self.trainable_variables[name] = weight
         return weight
 
     
@@ -60,13 +57,10 @@ class Layer(Module):
         # This is to compile if not built.
         if not self.built:
             self.build(inputs)
-
-        out = self.call(inputs)
+            self.__jitted_call = jax.jit(self.call)
+        out = self.__jitted_call(inputs)
         return out
-
-    def forward(self):
-        pass
-
+    
     def call(self, inputs):
         raise NotImplementedError("Call Method Missing:\nPlease define the control flow in the call method.")
 
@@ -117,12 +111,9 @@ class Dense(Layer):
             self.bias = None
         super().build()
     
-
-    def forward(trainable_variables, inputs):
-        return inputs @ trainable_variables['kernel'] + trainable_variables['bias']
-
     def call(self, inputs: Array) -> Array:
-        return self.forward(self.trainable_variables, inputs)
+        x = inputs @ self.trainable_variables['kernel'] + self.trainable_variables['bias']
+        return x
 
 
 # Non-trainable Layers:
