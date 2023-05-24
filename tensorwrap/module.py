@@ -52,10 +52,9 @@ class Module(BaseModule):
 
         # Removes the dynamic elements:
         for key in dic.keys():
-            if isinstance(dic[key], str):
+            if isinstance(dic[key], str) or isinstance(dic[key], bool):
                 aux_data[key] = vars(self).pop(key)
-            elif isinstance(dic[key], bool):
-                aux_data[key] = vars(self).pop(key)
+            
 
         children = vars(self).values()
         return (children, aux_data)

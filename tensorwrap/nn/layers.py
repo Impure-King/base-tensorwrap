@@ -1,12 +1,18 @@
-import jax.random
-from functools import partial
-from jax import jit
-from jaxtyping import Array
-from tensorwrap.module import Module
-import tensorwrap as tf
-import jax.numpy as jnp
-from random import randint
+# Stable Modules:
+import jax
 import numpy as np
+from jax import (jit,
+                 numpy as jnp)
+from jax.random import PRNGKey
+from jaxtyping import Array
+from random import randint
+from typing import (Any,
+                    Tuple,
+                    final)
+
+# Custom built Modules:
+import tensorwrap as tf
+from tensorwrap.module import Module
 
 # Custom Trainable Layer
 
@@ -15,14 +21,16 @@ class Layer(Module):
     """A base layer class that is used to create new JIT enabled layers.
        Acts as the subclass for all layers, to ensure that they are converted in PyTrees."""
 
-    def __init__(self, name = "layer", trainable=True, *args, **kwargs) -> None:
+    name_tracker: int = 0
+
+    def __init__(self, name: str = "layer", trainable: bool = True, *args, **kwargs) -> None:
         self.built = False
         self.name = name
         self.trainable = trainable
         self.trainable_variables = jax.tree_util.Partial(dict)()
     
 
-    def add_weights(self, shape, initializer, name, trainable=True):
+    def add_weights(self, shape: Tuple[int, ...], key = PRNGKey(randint(1, 10)), initializer = 'glorot_normal', name = 'unnamed weight', trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
         ---------
         Arguments:
@@ -34,13 +42,10 @@ class Layer(Module):
             weight = jnp.zeros(shape, dtype=jnp.float32)
 
         elif initializer == 'glorot_normal':
-            key = jax.random.PRNGKey(randint(1, 10))
             weight = jax.random.normal(key, shape, dtype=tf.float32)
 
         elif initializer == 'glorot_uniform':
-            key = jax.random.PRNGKey(randint(1, 10))
             weight = jax.random.uniform(key, shape, dtype=tf.float32)
-        
         else:
             raise ValueError("Incorrect initializer is given.")
 
@@ -49,23 +54,24 @@ class Layer(Module):
             self.trainable_variables[name] = weight
         return weight
 
-    
+
     def __repr__(self) -> str:
         return self.name
 
-    def __call__(self, inputs):
+    @final
+    def __call__(self, params: dict, inputs: Array):
         # This is to compile if not built.
         if not self.built:
             self.build(inputs)
-            self.__jitted_call = jax.jit(self.call)
-        out = self.__jitted_call(inputs)
+        out = self.call(params, inputs)
         return out
     
-    def call(self, inputs):
+    @jit
+    def call(self, params: dict, inputs: Array):
         raise NotImplementedError("Call Method Missing:\nPlease define the control flow in the call method.")
 
     # Needed to make the layer built
-    def build(self, inputs = None):
+    def build(self, inputs: Array = None):
         self.built = True
 
 
@@ -81,13 +87,13 @@ class Dense(Layer):
         kernel_initializer (Optional, str or Initializer)
     """
 
-    name_tracker = 0
+    name_tracker: int = 0
 
     def __init__(self,
-                 units,
-                 use_bias = True,
-                 kernel_initializer = 'glorot_uniform',
-                 bias_initializer = 'zeros',
+                 units: int,
+                 use_bias: bool = True,
+                 kernel_initializer: Module = 'glorot_uniform',
+                 bias_initializer: Module = 'zeros',
                  *args,
                  **kwargs):
         super().__init__(*args, **kwargs)
@@ -97,22 +103,23 @@ class Dense(Layer):
         self.bias_initializer = bias_initializer
         self.name = 'dense ' + str(Dense.name_tracker)
         Dense.name_tracker += 1
+        Layer.name_tracker -= 1
 
     def build(self, input_shape: int):
         input_shape = tf.last_dim(input_shape)
-        self.kernel = self.add_weights(shape=[input_shape, self.units],
-                                       initializer=self.kernel_initializer,
-                                       name="kernel")
+        self.kernel = self.add_weights(shape = (input_shape, self.units),
+                                       initializer = self.kernel_initializer,
+                                       name = "kernel")
         if self.use_bias:
-            self.bias = self.add_weights(shape=[self.units],
-                                         initializer=self.bias_initializer,
+            self.bias = self.add_weights(shape = (self.units,),
+                                         initializer = self.bias_initializer,
                                          name="bias")
         else:
             self.bias = None
         super().build()
     
-    def call(self, inputs: Array) -> Array:
-        x = inputs @ self.trainable_variables['kernel'] + self.trainable_variables['bias']
+    def call(self, params: dict, inputs: Array) -> Array:
+        x = inputs @ params['kernel'] + params['bias']
         return x
 
 
@@ -157,7 +164,7 @@ class Lambda(Module):
 
     """
 
-    def __init__(self, func=None, **kwargs):
+    def __init__(self, func: Any = None, **kwargs):
         super().__init__()
         self.func = func
 

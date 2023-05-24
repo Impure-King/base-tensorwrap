@@ -21,6 +21,6 @@ class gradient_descent(Optimizer):
     def call(self, weights, grad):
         return weights - self.lr * grad 
 
-    def apply_gradients(self, gradients: dict, weights: dict):
+    def apply_gradients(self, weights: dict, gradients: dict):
         weights = jax.tree_map(self.call, weights, gradients)
         return weights

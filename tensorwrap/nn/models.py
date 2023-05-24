@@ -1,29 +1,32 @@
 """Sets of functions that allow you to define a custom model or a Sequential model."""
+
+# Stable Modules:
 import jax
 import copy
 import tensorwrap as tf
-
+from typing import (Any,
+                    Tuple,
+                    final)
 from jaxtyping import Array
 from functools import partial
+
+# Custom built Modules:
+import tensorwrap as tf
 from tensorwrap.module import Module
+from tensorwrap.nn.layers import Layer
 
 class Model(Module):
     """ Main superclass for all models and loads any object as a PyTree with training and inference features."""
 
     _name_tracker = 0
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, dynamic = False, *args, **kwargs) -> None:
         super().__init__()
         self.args = args
         self.kwargs = kwargs
         self.trainable_variables = {}
-        # self.__verbosetracker = (
-        #     self.__verbose0,
-        #     self.__verbose1,
-        #     self.__verbose2
-        # )
+        self._compiled = False
 
-        # Creating trainable_variables:
         for attr_name in dir(self):
             _object = getattr(self, attr_name)
             if isinstance(_object, list):
@@ -31,27 +34,19 @@ class Model(Module):
                     self.__layer_initializer(i)
             else:
                 self.__layer_initializer(_object)
-                
-    def __init_subclass__(cls) -> None:
-        super().__init_subclass__()
-        cls.forward = staticmethod(jax.jit(cls.forward))
 
-    def __layer_initializer(self, _object):
+    def __layer_initializer(self, _object) -> None:
         if isinstance(_object, tf.nn.layers.Layer):
             if _object.name == 'layer':
                 _object.name += f' {Model._name_tracker}'
                 Model._name_tracker += 1
-            self.trainable_variables[_object.name] = _object
+            self.trainable_variables[_object.name] = _object.trainable_variables
 
-    def forward():
+    def call(self, params: dict, inputs: Any, *args, **kwargs) -> Any:
         pass
-
-    def call(self) -> Array:
-        pass
-
-    def __call__(self, *args) -> Array:
-        inputs = args[0]
-        outputs = self.call(inputs)
+    
+    def __call__(self, params: dict, inputs: Array, *args, **kwargs) -> Array:
+        outputs = self.call(params, inputs, *args, **kwargs)
         return outputs
     
     def compile(self,
@@ -62,73 +57,49 @@ class Model(Module):
         self.loss_fn = loss
         self.optimizer = optimizer
         self.metrics = metrics if metrics is not None else loss
+        self._compiled = True
 
+        def complete_grad(params, x, y):
+            y_pred = self.__call__(params, x)
+            losses = self.loss_fn(y, y_pred)
+            return losses
+
+        self._value_and_grad_fn = jax.value_and_grad(complete_grad)
+    
     def train_step(self,
-                   x,
-                   y=None,
-                   layer=None):
-        self._y_pred = self.__call__(x)
-        loss, grads = jax.value_and_grad(self.loss_fn)(tf.mean(y), tf.mean(self._y_pred))
-        self.trainable_layers = self.optimizer.apply_gradients(grads, layer)
-        return loss
+                   params,
+                   x_train,
+                   y_train) -> Tuple[dict, int]:
+        """ Notes:
+            Avoid using when using new loss functions or optimizers.
+                - This assumes that the loss function arguments are (y_true, y_pred)."""
+        if not self._compiled:
+            raise NotImplementedError("The model has not been compiled using ``self.compile``.")
+        losses, grads = self._value_and_grad_fn(params, x_train, y_train)
+        params = self.optimizer.apply_gradients(params, grads)
+        return params, losses
 
     def fit(self,
-            x,
-            y,
-            batch_size = 32,
-            epochs=1,
-            verbose = 1,
-            hist_return=False):
-        print_func = self.__verbosetracker[verbose]
-        hist = {}
-        for epoch in range(1, epochs+1):
-            loss = self.train_step(x, y, self.trainable_layers)
-            metric = self.metrics(y, self._y_pred)
-            print_func(epoch=epoch, epochs=epochs, metric=metric, loss=loss)
-            hist[epoch] = (loss, metric)
-        if hist_return:
-            return hist
-    
-    # Various reusable verbose functions:
-    def __verbose0(self, *args, **kwargs):
-        return 0
-
-    def __verbose1(self, epoch, epochs, metric, loss):
-        print(f"Epoch {epoch}|{epochs} \n"
-                f"[=========================]    Loss: {loss:10.5f}     Metric: {metric:10.5f}")
-    
-    def __verbose2(self, epoch, epochs, metric, loss):
-        print(f"Epoch {epoch}|{epochs} \t\t\t Loss: {loss:10.5f}\t\t\t     Metric: {metric:10.5f}")
-
-    def evaluate(self,
-                 x,
-                 y_true):
-        prediction = self.__call__(x)
-        metric = self.metrics(y_true, prediction)
-        loss = self.loss_fn(y_true, prediction)
-        self.__verbose1(epoch=1, epochs=1, y_true=y_true)
-
-    # Add a precision counter soon.
-    def predict(self, x: Array, precision = None):
-        try:
-            array = self.__call__(x)
-        except TypeError:
-            x = jax.numpy.array(x, dtype = jax.numpy.float32)
-            array = self.__call__(x)
-        return array
+            x_train,
+            y_train,
+            epochs = 1):
+        
+        for i in range(1, epochs + 1):
+            self.trainable_variables, loss = self.train_step(self.trainable_variables, x_train, y_train)
+            print(f"Epoch: {i} \t\t Loss: {loss}")
+        
 
 
 class Sequential(Model):
-    def __init__(self, layers=None) -> None:
-        self.layers = [] if layers is None else layers
+    def __init__(self, layers: list = []) -> None:
+        self.layers = layers
         super().__init__()
 
 
-    def add(self, layer):
+    def add(self, layer: Layer) -> None:
         self.layers.append(layer)
-    
 
-    def call(self, x) -> Array:
+    def call(self, params: dict, x: Array) -> Array:
         for layer in self.layers:
-            x = layer(x)
+            x = layer(params[layer.name], x)
         return x
