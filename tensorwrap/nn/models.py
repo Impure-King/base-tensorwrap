@@ -64,9 +64,9 @@ class Model(Module):
         def complete_grad(params, x, y):
             y_pred = self.__call__(params, x)
             losses = self.loss_fn(y, y_pred)
-            return losses
+            return losses, y_pred
 
-        self._value_and_grad_fn = jax.value_and_grad(complete_grad)
+        self._value_and_grad_fn = jax.value_and_grad(complete_grad, has_aux=True)
     
     def init(self, x):
         self.__call__(self.trainable_variables, x)
@@ -76,7 +76,7 @@ class Model(Module):
     def train_step(self,
                    params,
                    x_train,
-                   y_train) -> Tuple[dict, int]:
+                   y_train) -> Tuple[dict, Tuple[int, int]]:
         """ Notes:
             Avoid using when using new loss functions or optimizers.
                 - This assumes that the loss function arguments are (y_true, y_pred)."""
@@ -84,9 +84,9 @@ class Model(Module):
             raise NotImplementedError("The model has not been compiled using ``model.compile``.")
         if not self._initialized:
             raise NotImplementedError("The model parameters have not been initialized using ``model.init``")
-        losses, grads = self._value_and_grad_fn(params, x_train, y_train)
+        (losses, y_pred), grads = self._value_and_grad_fn(params, x_train, y_train)
         params = self.optimizer.apply_gradients(params, grads)
-        return params, losses
+        return params, (losses, y_pred)
 
     def fit(self,
             x_train,
@@ -96,8 +96,9 @@ class Model(Module):
         step = jax.jit(self.train_step)
 
         for i in range(1, epochs + 1):
-            self.trainable_variables, loss = step(self.trainable_variables, x_train, y_train)
-            print(f"Epoch: {i} \t\t Loss: {loss:.5f}")
+            self.trainable_variables, (loss, pred) = step(self.trainable_variables, x_train, y_train)
+            metric = self.metrics(y_train, pred)
+            print(f"Epoch: {i} \t\t Loss: {loss:.5f} \t\t Metrics: {metric:.5f}")
         
 
 

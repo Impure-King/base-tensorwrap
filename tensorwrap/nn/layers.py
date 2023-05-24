@@ -29,6 +29,8 @@ class Layer(Module):
         self.trainable = trainable
         self.trainable_variables = jax.tree_util.Partial(dict)()
         self.dynamic = dynamic
+        # Adding a defined out shape for all layers:
+        # self.out_shape
 
     def add_weights(self, shape: Tuple[int, ...], key = PRNGKey(randint(1, 10)), initializer = 'glorot_normal', name = 'unnamed weight', trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
