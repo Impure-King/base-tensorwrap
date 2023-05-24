@@ -23,12 +23,12 @@ class Layer(Module):
 
     name_tracker: int = 0
 
-    def __init__(self, name: str = "layer", trainable: bool = True, *args, **kwargs) -> None:
+    def __init__(self, name: str = "layer", dynamic = False, trainable: bool = True, *args, **kwargs) -> None:
         self.built = False
         self.name = name
         self.trainable = trainable
         self.trainable_variables = jax.tree_util.Partial(dict)()
-    
+        self.dynamic = dynamic
 
     def add_weights(self, shape: Tuple[int, ...], key = PRNGKey(randint(1, 10)), initializer = 'glorot_normal', name = 'unnamed weight', trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
@@ -63,10 +63,12 @@ class Layer(Module):
         # This is to compile if not built.
         if not self.built:
             self.build(inputs)
-        out = self.call(params, inputs)
+            if not self.dynamic:
+                self.__call = jax.jit(self.call)
+        out = self.__call(params, inputs)
         return out
     
-    @jit
+    
     def call(self, params: dict, inputs: Array):
         raise NotImplementedError("Call Method Missing:\nPlease define the control flow in the call method.")
 
@@ -94,9 +96,10 @@ class Dense(Layer):
                  use_bias: bool = True,
                  kernel_initializer: Module = 'glorot_uniform',
                  bias_initializer: Module = 'zeros',
+                 dynamic: bool = False,
                  *args,
                  **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(dynamic=dynamic, *args, **kwargs)
         self.units = units
         self.use_bias = use_bias
         self.kernel_initializer = kernel_initializer

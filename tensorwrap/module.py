@@ -8,7 +8,7 @@ from jax.tree_util import register_pytree_node_class
 __all__ = ["Module"]
 
 
-class BaseModule(metaclass=ABCMeta):
+class Module(metaclass=ABCMeta):
     """ This is the most basic template that defines all subclass items to be a pytree and accept arguments flexibly.
     Don't use this template and instead refer to the Module Template, in order to create custom parts. If really needed,
     use the PyTorch variation which will be suited for research."""
@@ -33,37 +33,22 @@ class BaseModule(metaclass=ABCMeta):
     def call(self, *args, **kwargs):
         pass
 
-
-# Creating the unrolled tree class:
-class Module(BaseModule):
-    """This is the base class for all types of functions and components.
-    This is going to be a static type component, in order to allow jit.compile
-    from jax and accelerate the training process."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-    
-    def __init_subclass__(cls) -> None:
-        super().__init_subclass__()
-
     def tree_flatten(self):
         dic = vars(self).copy()
         aux_data = {}
-
+        leaves = []
         # Removes the dynamic elements:
-        for key in dic.keys():
-            if isinstance(dic[key], str) or isinstance(dic[key], bool):
-                aux_data[key] = vars(self).pop(key)
-            
-
-        children = vars(self).values()
-        return (children, aux_data)
+        for key in vars(self).keys():
+            if isinstance(dic[key], (str, int, bool)):
+                aux_data[key] = dic.pop(key)
+            elif isinstance(dic[key], jax.Array):
+                leaves.append(dic.pop(key))
+        
+        leaves = (leaves)
+        return leaves, aux_data
 
     @classmethod
     def tree_unflatten(cls, aux_data, children):
         instance = cls(*children, **aux_data)
         return instance
-
-    def call(self):
-        pass
 

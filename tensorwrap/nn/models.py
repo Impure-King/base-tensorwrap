@@ -26,6 +26,7 @@ class Model(Module):
         self.kwargs = kwargs
         self.trainable_variables = {}
         self._compiled = False
+        self._initialized = False
 
         for attr_name in dir(self):
             _object = getattr(self, attr_name)
@@ -34,6 +35,7 @@ class Model(Module):
                     self.__layer_initializer(i)
             else:
                 self.__layer_initializer(_object)
+        
 
     def __layer_initializer(self, _object) -> None:
         if isinstance(_object, tf.nn.layers.Layer):
@@ -66,6 +68,11 @@ class Model(Module):
 
         self._value_and_grad_fn = jax.value_and_grad(complete_grad)
     
+    def init(self, x):
+        self.__call__(self.trainable_variables, x)
+        self._initialized = True
+
+
     def train_step(self,
                    params,
                    x_train,
@@ -74,7 +81,9 @@ class Model(Module):
             Avoid using when using new loss functions or optimizers.
                 - This assumes that the loss function arguments are (y_true, y_pred)."""
         if not self._compiled:
-            raise NotImplementedError("The model has not been compiled using ``self.compile``.")
+            raise NotImplementedError("The model has not been compiled using ``model.compile``.")
+        if not self._initialized:
+            raise NotImplementedError("The model parameters have not been initialized using ``model.init``")
         losses, grads = self._value_and_grad_fn(params, x_train, y_train)
         params = self.optimizer.apply_gradients(params, grads)
         return params, losses
@@ -84,9 +93,11 @@ class Model(Module):
             y_train,
             epochs = 1):
         
+        step = jax.jit(self.train_step)
+
         for i in range(1, epochs + 1):
-            self.trainable_variables, loss = self.train_step(self.trainable_variables, x_train, y_train)
-            print(f"Epoch: {i} \t\t Loss: {loss}")
+            self.trainable_variables, loss = step(self.trainable_variables, x_train, y_train)
+            print(f"Epoch: {i} \t\t Loss: {loss:.5f}")
         
 
 
