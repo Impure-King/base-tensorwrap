@@ -27,18 +27,10 @@ class Model(Module):
         self.trainable_variables = {}
         self._compiled = False
         self._initialized = False
-
-        for attr_name in dir(self):
-            _object = getattr(self, attr_name)
-            if isinstance(_object, list):
-                for i in _object:    
-                    self.__layer_initializer(i)
-            else:
-                self.__layer_initializer(_object)
         
 
     def __layer_initializer(self, _object) -> None:
-        if isinstance(_object, tf.nn.layers.Layer):
+        if isinstance(_object, (tf.nn.layers.Layer, tf.nn.activations.Activation)):
             if _object.name == 'layer':
                 _object.name += f' {Model._name_tracker}'
                 Model._name_tracker += 1
@@ -48,6 +40,9 @@ class Model(Module):
         pass
     
     def __call__(self, params: dict, inputs: Array, *args, **kwargs) -> Array:
+        if not self._initialized:
+            raise NotImplementedError("The model parameters have not been initialized using ``model.init``")
+
         outputs = self.call(params, inputs, *args, **kwargs)
         return outputs
     
@@ -69,8 +64,15 @@ class Model(Module):
         self._value_and_grad_fn = jax.value_and_grad(complete_grad, has_aux=True)
     
     def init(self, x):
-        self.__call__(self.trainable_variables, x)
+        for attr_name in dir(self):
+            _object = getattr(self, attr_name)
+            if isinstance(_object, list):
+                for i in _object:    
+                    self.__layer_initializer(i)
+            else:
+                self.__layer_initializer(_object)
         self._initialized = True
+        self.__call__(self.trainable_variables, x)
 
 
     def train_step(self,
@@ -82,8 +84,6 @@ class Model(Module):
                 - This assumes that the loss function arguments are (y_true, y_pred)."""
         if not self._compiled:
             raise NotImplementedError("The model has not been compiled using ``model.compile``.")
-        if not self._initialized:
-            raise NotImplementedError("The model parameters have not been initialized using ``model.init``")
         (losses, y_pred), grads = self._value_and_grad_fn(params, x_train, y_train)
         params = self.optimizer.apply_gradients(params, grads)
         return params, (losses, y_pred)

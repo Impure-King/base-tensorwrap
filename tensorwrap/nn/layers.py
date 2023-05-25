@@ -25,12 +25,13 @@ class Layer(Module):
 
     def __init__(self, name: str = "layer", dynamic = False, trainable: bool = True, *args, **kwargs) -> None:
         self.built = False
-        self.name = name
+        self.name = name + str(Layer.name_tracker)
         self.trainable = trainable
         self.trainable_variables = jax.tree_util.Partial(dict)()
         self.dynamic = dynamic
         # Adding a defined out shape for all layers:
         # self.out_shape
+        Layer.name_tracker += 1
 
     def add_weights(self, shape: Tuple[int, ...], key = PRNGKey(randint(1, 10)), initializer = 'glorot_normal', name = 'unnamed weight', trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
@@ -130,148 +131,153 @@ class Dense(Layer):
 
 # Non-trainable Layers:
 
-class Lambda(Module):
-    """A non-trainable layer that applies a callable to the input tensor.
+# class Lambda(Module):
+#     """A non-trainable layer that applies a callable to the input tensor.
 
-    This layer is useful for applying custom functions or operations to the input tensor
-    without introducing any trainable variables. Additionally, it acts as a superclass for custom
-    nontrainable layers.
+#     This layer is useful for applying custom functions or operations to the input tensor
+#     without introducing any trainable variables. Additionally, it acts as a superclass for custom
+#     nontrainable layers.
 
-    Args:
-        func (callable): The function or operation to apply to the input tensor. Defaults to None.
+#     Args:
+#         func (callable): The function or operation to apply to the input tensor. Defaults to None.
 
-    Example 1:
-        >>> def add_one(x):
-        ...     return x + 1
-        >>> layer = Lambda(add_one)
-        >>> layer(torch.tensor([1, 2, 3]))
-        tensor([2, 3, 4])
+#     Example 1:
+#         >>> def add_one(x):
+#         ...     return x + 1
+#         >>> layer = Lambda(add_one)
+#         >>> layer(torch.tensor([1, 2, 3]))
+#         tensor([2, 3, 4])
 
-    Example 2:
-        >>> import tensorwrap as tf
-        >>> class Flatten(tf.nn.Lambda):
-        ...     def __init__(self):
-        ...         super().__init__()
-        ...     
-        ...     def call(self, inputs):
-        ...         batch_size = tf.shape(inputs)[0]
-        ...         input_size = tf.shape(inputs)[1:]
-        ...         output_size = tf.prod(tf.Variable(input_shape))
-        ...         return tf.reshape(inputs, (batch_size, output_size))
-        >>> x = tf.range(1, 1e5)
-        >>> x = tf.range(1, int(1e5))
-        >>> x = tf.reshape(x, (1, 3, 11111, 3))
-        >>> Flatten()(x).shape
-        (1, 99999)
+#     Example 2:
+#         >>> import tensorwrap as tf
+#         >>> class Flatten(tf.nn.Lambda):
+#         ...     def __init__(self):
+#         ...         super().__init__()
+#         ...     
+#         ...     def call(self, inputs):
+#         ...         batch_size = tf.shape(inputs)[0]
+#         ...         input_size = tf.shape(inputs)[1:]
+#         ...         output_size = tf.prod(tf.Variable(input_shape))
+#         ...         return tf.reshape(inputs, (batch_size, output_size))
+#         >>> x = tf.range(1, 1e5)
+#         >>> x = tf.range(1, int(1e5))
+#         >>> x = tf.reshape(x, (1, 3, 11111, 3))
+#         >>> Flatten()(x).shape
+#         (1, 99999)
 
-    Inherits from:
-        Module
+#     Inherits from:
+#         Module
 
-    """
-
-    def __init__(self, func: Any = None, **kwargs):
-        super().__init__()
-        self.func = func
-
-    @jax.jit
-    def __call__(self, inputs):
-        return self.call(inputs)
-
-    def call(self, inputs):
-        """Applies the callable to the input tensor.
-
-        Args:
-            inputs: The input tensor.
-
-        Returns:
-            The output tensor after applying the callable to the input tensor.
-        """
-        return self.func(inputs) if not self.func == None else inputs
-
-# Flatten Layer:
+#     """
+#     __name_tracker = 0
+#     def __init__(self, func: Any = None, **kwargs):
+#         super().__init__()
+#         self.func = func
+#         self.name = "lambda" + str(Lambda.__name_tracker)
+#         self.trainable_variables = {}
 
 
-class Flatten(Lambda):
-    """
-    A layer that flattens the input tensor, collapsing all dimensions except for the batch dimension.
+    
+#     def __call__(self, params, inputs):
+#         return self.call(inputs)
 
-    Args:
-        input_shape (Optional, Array): A tuple specifying the shape of the input tensor. If specified, the layer will use this shape to determine the output size. Otherwise, the layer will compute the output size by flattening the remaining dimensions after the batch dimension.
+#     def call(self, inputs):
+#         """Applies the callable to the input tensor.
 
-    Example:
-        >>> # Create a Flatten layer with an input shape of (None, 28, 28, 3)
-        >>> flatten_layer = tf.nn.layers.Flatten()
-        ...
-        >>> # Apply the Flatten layer to a tensor of shape (None, 28, 28, 3)
-        >>> y = flatten_layer(x)
-        >>> print(y.shape)
-        (None, 2352)
+#         Args:
+#             inputs: The input tensor.
 
-    Inherits from:
-        Module
-        Lambda
-    """
+#         Returns:
+#             The output tensor after applying the callable to the input tensor.
+#         """
+#         return self.func(inputs) if not self.func == None else inputs
 
-    def __init__(self, input_shape=None):
-        self.shape = input_shape
-
-    def call(self, inputs):
-        """
-        Flattens the input tensor, collapsing all dimensions except for the batch dimension.
-
-        Args:
-            inputs: Input tensor.
-
-        Returns:
-            Flattened tensor with shape (batch_size, output_size).
-        """
-        batch_size = tf.shape(inputs)[0]
-        if self.shape is not None:
-            output_size = self.shape
-        else:
-            input_shape = tf.shape(inputs)[1:]
-            output_size = np.prod(np.array(input_shape))
-        return np.reshape(inputs, (batch_size, output_size))
+# # Flatten Layer:
 
 
-class Concat(Lambda):
-    """
-    A layer that concatenates all arrays given.
+# class Flatten(Lambda):
+#     """
+#     A layer that flattens the input tensor, collapsing all dimensions except for the batch dimension.
 
-    Example:
-        >>> # Create a concat layer:
-        >>> concat = tf.nn.layers.Concat()
-        ...
-        >>> # Creating two arrays to concatenate:
-        >>> x = tf.Variable([1, 2, 3])
-        >>> y = tf.Variable([4, 5, 6])
-        >>> # Apply the Flatten layer to all the tensors:
-        >>> z = concat(x, y)
-        >>> print(z)
-        [1, 2, 3
-         4, 5, 6]
+#     Args:
+#         input_shape (Optional, Array): A tuple specifying the shape of the input tensor. If specified, the layer will use this shape to determine the output size. Otherwise, the layer will compute the output size by flattening the remaining dimensions after the batch dimension.
 
-    Inherits from:
-        Module
-        Lambda
-    """
+#     Example:
+#         >>> # Create a Flatten layer with an input shape of (None, 28, 28, 3)
+#         >>> flatten_layer = tf.nn.layers.Flatten()
+#         ...
+#         >>> # Apply the Flatten layer to a tensor of shape (None, 28, 28, 3)
+#         >>> y = flatten_layer(x)
+#         >>> print(y.shape)
+#         (None, 2352)
 
-    def call(self, inputs, axis=0):
-        """
-        Flattens the input tensor, collapsing all dimensions except for the batch dimension.
+#     Inherits from:
+#         Module
+#         Lambda
+#     """
+#     __name_tracker = 0
+#     def __init__(self, input_shape=None, name = "flatten"):
+#         super().__init__()
+#         self.shape = input_shape
+#         self.name = name + str(Flatten.__name_tracker)
 
-        Args:
-            inputs: Input tensors in a list with the same dimensions.
+#     def call(self, inputs):
+#         """
+#         Flattens the input tensor, collapsing all dimensions except for the batch dimension.
 
-        Returns:
-            A concatenated tensor, with all the elements.
-        """
-        if not isinstance(inputs, list):
-            raise ValueError(
-                f"A list of tensors wasn't inputted. Instead, the input type is {type(inputs)}.")
+#         Args:
+#             inputs: Input tensor.
 
-        try:
-            return jax.numpy.concatenate(inputs, axis=axis)
-        except TypeError:
-            raise ValueError(
-                "The input tensors don't have homogenous dimensions.")
+#         Returns:
+#             Flattened tensor with shape (batch_size, output_size).
+#         """
+#         batch_size = tf.shape(inputs)[0]
+#         if self.shape is not None:
+#             output_size = self.shape
+#         else:
+#             input_shape = tf.shape(inputs)[1:]
+#             output_size = np.prod(np.array(input_shape))
+#         return np.reshape(inputs, (batch_size, output_size))
+
+
+# class Concat(Lambda):
+#     """
+#     A layer that concatenates all arrays given.
+
+#     Example:
+#         >>> # Create a concat layer:
+#         >>> concat = tf.nn.layers.Concat()
+#         ...
+#         >>> # Creating two arrays to concatenate:
+#         >>> x = tf.Variable([1, 2, 3])
+#         >>> y = tf.Variable([4, 5, 6])
+#         >>> # Apply the Flatten layer to all the tensors:
+#         >>> z = concat(x, y)
+#         >>> print(z)
+#         [1, 2, 3
+#          4, 5, 6]
+
+#     Inherits from:
+#         Module
+#         Lambda
+#     """
+
+#     def call(self, inputs, axis=0):
+#         """
+#         Flattens the input tensor, collapsing all dimensions except for the batch dimension.
+
+#         Args:
+#             inputs: Input tensors in a list with the same dimensions.
+
+#         Returns:
+#             A concatenated tensor, with all the elements.
+#         """
+#         if not isinstance(inputs, list):
+#             raise ValueError(
+#                 f"A list of tensors wasn't inputted. Instead, the input type is {type(inputs)}.")
+
+#         try:
+#             return jax.numpy.concatenate(inputs, axis=axis)
+#         except TypeError:
+#             raise ValueError(
+#                 "The input tensors don't have homogenous dimensions.")

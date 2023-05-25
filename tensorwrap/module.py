@@ -25,6 +25,7 @@ class Module(metaclass=ABCMeta):
     # This function is responsible for making the subclasses into PyTrees:
     def __init_subclass__(cls) -> None:
         register_pytree_node_class(cls)
+        pass
 
     def __call__(self, *args, **kwargs) -> Any:
         return self.call(*args, **kwargs)
@@ -39,12 +40,10 @@ class Module(metaclass=ABCMeta):
         leaves = []
         # Removes the dynamic elements:
         for key in vars(self).keys():
-            if isinstance(dic[key], (str, int, bool)):
+            if isinstance(dic[key], (str, int, bool, list, tuple)):
                 aux_data[key] = dic.pop(key)
-            elif isinstance(dic[key], jax.Array):
+            elif isinstance(dic[key], (jax.Array, dict)):
                 leaves.append(dic.pop(key))
-        
-        leaves = (leaves)
         return leaves, aux_data
 
     @classmethod
