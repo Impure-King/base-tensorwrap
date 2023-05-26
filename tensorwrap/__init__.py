@@ -9,7 +9,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # Library Paths:
 from tensorwrap import nn
-from tensorwrap import module
 from tensorwrap import test
 from tensorwrap import config
 
