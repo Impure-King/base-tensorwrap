@@ -50,7 +50,7 @@ class Dense(nn.layers.Layer):
         self.bias = self.add_weights([self.units],
                                      initializer = 'zeros',
                                      name='bias')
-        super().build()
+        super().build() # Required for letting model know that layer is built.
     
     # Use call not __call__ to define the flow. No tf.function needed either.
     def call(self, params, inputs):
