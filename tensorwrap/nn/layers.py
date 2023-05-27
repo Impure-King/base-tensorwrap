@@ -127,6 +127,31 @@ class Dense(Layer):
     def call(self, params: dict, inputs: Array) -> Array:
         x = inputs @ params['kernel'] + params['bias']
         return x
+    
+# Implementing a convolutional layer:
+class Conv2D(Layer):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding='SAME'):
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+
+    def build(self):
+        self.kernel = jax.random.normal(self.kernel_size, self.kernel_size, self.in_channels, self.out_channels)
+        self.bias = jnp.zeros(self.out_channels)
+
+    def call(self, x):
+        padded_x = jax.ops.space_to_batch(x, self.padding)
+        x_shape = padded_x.shape
+        x_batch, x_padded_shape = jax.ops.chunks(x_shape)
+
+        x_batch = jnp.reshape(x_batch, (x_padded_shape[0], -1))
+        y_batch = jnp.einsum('ijkl,ijabcd->abcd', self.kernel, x_batch) + self.bias
+        y_batch = jnp.reshape(y_batch, x_padded_shape[1:] + (1,))
+        y_batch = jnp.reshape(y_batch, (x_shape[0],) + y_batch.shape[1:])
+
+        return y_batch
 
 
 # Non-trainable Layers:

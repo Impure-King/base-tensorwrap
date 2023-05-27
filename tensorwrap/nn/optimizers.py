@@ -1,8 +1,8 @@
-import tensorwrap as tf
 import jax
 from tensorwrap.module import Module
-from functools import partial
 from jaxtyping import Array
+
+__all__ = ["Optimizer", "gradient_descent"]
 
 class Optimizer(Module):
 
@@ -11,7 +11,8 @@ class Optimizer(Module):
         if not NotImplemented:
             raise NotImplementedError
         
-    
+    def call(self):
+        pass
 
 # Change the naming to conventions:
 class gradient_descent(Optimizer):

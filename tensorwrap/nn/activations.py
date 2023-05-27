@@ -8,7 +8,6 @@ class Activation(Module):
     def __init__(self, name = "activation"):
         super().__init__()
         self.name = name + str(Activation.__layer_tracker)
-        self.trainable_variables = {}
         Activation.__layer_tracker += 1
     
     @classmethod
