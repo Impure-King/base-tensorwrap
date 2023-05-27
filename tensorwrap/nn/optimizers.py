@@ -7,7 +7,6 @@ from jaxtyping import Array
 class Optimizer(Module):
 
     def __init__(self, lr=0.01):
-        super().__init__()
         self.lr = lr
         if not NotImplemented:
             raise NotImplementedError

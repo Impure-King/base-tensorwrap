@@ -24,10 +24,10 @@ class Layer(Module):
     name_tracker: int = 0
 
     def __init__(self, name: str = "layer", dynamic = False, trainable: bool = True, *args, **kwargs) -> None:
+        super().__init__()
         self.built = False
         self.name = name + str(Layer.name_tracker)
         self.trainable = trainable
-        self.trainable_variables = jax.tree_util.Partial(dict)()
         self.dynamic = dynamic
         # Adding a defined out shape for all layers:
         # self.out_shape

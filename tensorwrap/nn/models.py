@@ -20,11 +20,8 @@ class Model(Module):
 
     _name_tracker = 0
 
-    def __init__(self, dynamic = False, *args, **kwargs) -> None:
+    def __init__(self, dynamic = False) -> None:
         super().__init__()
-        self.args = args
-        self.kwargs = kwargs
-        self.trainable_variables = {}
         self._compiled = False
         self._initialized = False
         
