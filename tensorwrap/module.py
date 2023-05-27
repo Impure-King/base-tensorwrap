@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod
 from jax import jit
 from jax.tree_util import register_pytree_node_class
 from inspect import signature
+import tensorwrap as tf
 
 # All classes allowed for export.
 __all__ = ["Module"]
@@ -56,7 +57,6 @@ class Module(metaclass=ABCMeta):
         inputs = {}
         par = [params.name for params in signature(cls.__init__).parameters.values()]
         par.remove('self')
-
         for key in par:
             inputs[key] = aux_data[key]
         instance = cls(**inputs)

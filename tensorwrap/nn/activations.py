@@ -8,6 +8,7 @@ class Activation(Module):
     def __init__(self, name = "activation"):
         super().__init__()
         self.name = name + str(Activation.__layer_tracker)
+        self.id = int(self.name[-1])
         Activation.__layer_tracker += 1
     
     @classmethod
@@ -20,6 +21,12 @@ class Activation(Module):
             return cls.dict[name.lower()]
         except:
             raise ValueError(f"The activation function {name} doesn't exist.")
+    
+    def init(self, input_shape):
+        self._output_shape = input_shape
+
+    def compute_output_shape(self):
+        return self._output_shape
 
     @staticmethod
     def no_activate(inputs):

@@ -43,6 +43,7 @@ class Dense(nn.layers.Layer):
   
     def build(self, input_shape: tuple) -> None:
         input_shape = tf.shape(input_shape) # Getting appropriate input shape
+        
         # Naming each parameter to later access from model.trainable_variables
         self.kernel = self.add_weights([input_shape, self.units],
                                        initializer = 'glorot_uniform',

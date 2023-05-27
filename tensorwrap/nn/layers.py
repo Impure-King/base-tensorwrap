@@ -21,17 +21,17 @@ class Layer(Module):
     """A base layer class that is used to create new JIT enabled layers.
        Acts as the subclass for all layers, to ensure that they are converted in PyTrees."""
 
-    name_tracker: int = 0
+    _name_tracker: int = 0
 
     def __init__(self, name: str = "layer", dynamic = False, trainable: bool = True, *args, **kwargs) -> None:
         super().__init__()
         self.built = False
-        self.name = name + str(Layer.name_tracker)
+        self.name = name + str(Layer._name_tracker)
         self.trainable = trainable
         self.dynamic = dynamic
         # Adding a defined out shape for all layers:
         # self.out_shape
-        Layer.name_tracker += 1
+        Layer._name_tracker += 1
 
     def add_weights(self, shape: Tuple[int, ...], key = PRNGKey(randint(1, 10)), initializer = 'glorot_normal', name = 'unnamed weight', trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
@@ -56,7 +56,13 @@ class Layer(Module):
         if trainable:
             self.trainable_variables[name] = weight
         return weight
+    
 
+    def compute_output_shape(self):
+        raise NotImplementedError("Please create a `compute_output_shape` method to compute the output shape of the layer.")
+
+    def init(self, x_shape):
+        self.build(x_shape)
 
     def __repr__(self) -> str:
         return self.name
@@ -65,7 +71,7 @@ class Layer(Module):
     def __call__(self, params: dict, inputs: Array):
         # This is to compile if not built.
         if not self.built:
-            self.build(inputs)
+            self.build(inputs.shape)
             if not self.dynamic:
                 self.__call = jax.jit(self.call)
         out = self.__call(params, inputs)
@@ -76,7 +82,7 @@ class Layer(Module):
         raise NotImplementedError("Call Method Missing:\nPlease define the control flow in the call method.")
 
     # Needed to make the layer built
-    def build(self, inputs: Array = None):
+    def build(self, inputs: Tuple[int, ...] = None):
         self.built = True
 
 
@@ -92,7 +98,7 @@ class Dense(Layer):
         kernel_initializer (Optional, str or Initializer)
     """
 
-    name_tracker: int = 0
+    __name_tracker: int = 0
 
     def __init__(self,
                  units: int,
@@ -107,13 +113,12 @@ class Dense(Layer):
         self.use_bias = use_bias
         self.kernel_initializer = kernel_initializer
         self.bias_initializer = bias_initializer
-        self.name = 'dense ' + str(Dense.name_tracker)
-        Dense.name_tracker += 1
-        Layer.name_tracker -= 1
+        self.name = 'dense ' + str(Dense.__name_tracker)
+        Dense.__name_tracker += 1
+        Layer._name_tracker += 1
 
-    def build(self, input_shape: int):
-        input_shape = tf.last_dim(input_shape)
-        self.kernel = self.add_weights(shape = (input_shape, self.units),
+    def build(self, input_shape):
+        self.kernel = self.add_weights(shape = (input_shape[-1], self.units),
                                        initializer = self.kernel_initializer,
                                        name = "kernel")
         if self.use_bias:
@@ -123,6 +128,9 @@ class Dense(Layer):
         else:
             self.bias = None
         super().build()
+
+    def compute_output_shape(self):
+        return self.units
     
     def call(self, params: dict, inputs: Array) -> Array:
         x = inputs @ params['kernel'] + params['bias']

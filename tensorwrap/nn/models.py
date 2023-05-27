@@ -97,6 +97,8 @@ class Model(Module):
             metric = self.metrics(y_train, pred)
             print(f"Epoch: {i} \t\t Loss: {loss:.5f} \t\t Metrics: {metric:.5f}")
         
+    def predict(self, x):
+        return self.__call__(self.trainable_variables, x)
 
 
 class Sequential(Model):
