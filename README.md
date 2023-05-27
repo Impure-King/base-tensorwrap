@@ -38,21 +38,24 @@ from tensorwrap import nn
 
 class Dense(nn.layers.Layer):
     def __init__(self, units) -> None:
+        super().__init__() # Needed for tracking trainable_variables.
         self.units = units # Defining the output shape
-        super().__init__() # Needed for making it JIT compatible.
   
     def build(self, input_shape: tuple) -> None:
         input_shape = tf.shape(input_shape) # Getting appropriate input shape
+        # Naming each parameter to later access from model.trainable_variables
         self.kernel = self.add_weights([input_shape, self.units],
-                                       initializer = 'glorot_uniform')
+                                       initializer = 'glorot_uniform',
+                                       name='kernel')
         self.bias = self.add_weights([self.units],
-                                     initializer = 'zeros')
-        super().build(self.kernel, self.bias) # Needed to add the kernel to model.
+                                     initializer = 'zeros',
+                                     name='bias')
+        super().build()
     
     # Use call not __call__ to define the flow. No tf.function needed either.
-    def call(self, inputs):
-        return inputs @ self.kernel + self.bias
-```
+    def call(self, params, inputs):
+        return inputs @ params['kernel'] + params['bias'] # Using params as an input, allows use to pass in the model.trainable_variables later.
+ ```
 
 2) Just In Time Compiling with tf.function
 ```python
@@ -66,7 +69,7 @@ def mse(y_pred, y_true):
 
 print(mse(100, 102))
 ```
-3) Customizing with Module Class
+3) Custom Models
 ```python 
 
 class CheckPoint(Module):
@@ -81,16 +84,13 @@ class CheckPoint(Module):
 
 2. Also, using ``tensorwrap.Module`` is currently not recommended, since other superclasses offer more functionality and ease of use.
 
-3. Sometime, the JAX backend may give out and give an algorithmic error. Another high priority, though this one is hidden in the C++ api of JIT.
+3. Graph execution is currently not available, which means that all exported models can only be deployed within a python environment.
 
-4. The JIT compilation is currently double of TensorFlow's on big models. However, the speed up is immense.
-
-5. Graph execution is currently not available, which means that all exported models can only be deployed within a python environment.
 
 
 ### Installation
 
-The device installation of TensorWrap depends on its backend, being JAX. Thus, our normal install will be covering both the GPU and CPU installation.
+The device installation of TensorWrap depends on its backend, being JAX. Thus, our normal install will be covering only the cpu version. For gpu version, please check [JAX](https://github.com/google/jax)'s documentation.
 
 ```bash
 pip install --upgrade pip
@@ -104,7 +104,7 @@ On Linux, it is often necessary to first update `pip` to a version that supports
 
 **Note**
 
-If any problems occur with cuda installation, please visit the [JAX](www.github.com/google/jax) github page, in order to understand the problem with lower API installation.
+If any problems occur with cuda installation, please visit the [JAX](https://github.com/google/jax#installation) github page, in order to understand the problem with lower API installation.
 
 ## Citations
 
