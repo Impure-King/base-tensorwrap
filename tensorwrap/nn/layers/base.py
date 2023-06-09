@@ -12,7 +12,9 @@ from typing import (Any,
 
 # Custom built Modules:
 import tensorwrap as tf
-from tensorwrap.module import Module
+from ...module import Module
+
+__all__ = ["Layer", "Dense"]
 
 # Custom Trainable Layer
 
@@ -23,14 +25,13 @@ class Layer(Module):
 
     _name_tracker: int = 0
 
-    def __init__(self, name: str = "layer", dynamic = False, trainable: bool = True, *args, **kwargs) -> None:
+    def __init__(self, name: str = "layer_", dynamic = False, trainable: bool = True, dtype = jnp.float32, *args, **kwargs) -> None:
         super().__init__()
         self.built = False
         self.name = name + str(Layer._name_tracker)
         self.trainable = trainable
         self.dynamic = dynamic
-        # Adding a defined out shape for all layers:
-        # self.out_shape
+        self.id = Layer._name_tracker
         Layer._name_tracker += 1
 
     def add_weights(self, shape: Tuple[int, ...], key = PRNGKey(randint(1, 10)), initializer = 'glorot_normal', name = 'unnamed weight', trainable=True):
@@ -113,7 +114,7 @@ class Dense(Layer):
         self.use_bias = use_bias
         self.kernel_initializer = kernel_initializer
         self.bias_initializer = bias_initializer
-        self.name = 'dense ' + str(Dense.__name_tracker)
+        self.name = 'dense_' + str(Dense.__name_tracker)
         Dense.__name_tracker += 1
         Layer._name_tracker += 1
 
@@ -160,6 +161,11 @@ class Conv2D(Layer):
         y_batch = jnp.reshape(y_batch, (x_shape[0],) + y_batch.shape[1:])
 
         return y_batch
+
+
+# Inspection Fixes:
+Layer.__module__ = "tensorwrap.nn.layers"
+Dense.__module__ = "tensorwrap.nn.layers"
 
 
 # Non-trainable Layers:

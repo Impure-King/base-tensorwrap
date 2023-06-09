@@ -1,5 +1,5 @@
 import jax
-from tensorwrap.module import Module
+from ...module import Module
 from jaxtyping import Array
 
 __all__ = ["Optimizer", "gradient_descent"]
@@ -26,3 +26,6 @@ class gradient_descent(Optimizer):
     def apply_gradients(self, weights: dict, gradients: dict):
         weights = jax.tree_map(self.call, weights, gradients)
         return weights
+
+# Inspection fixes:
+Optimizer.__module__ = "tensorwrap.nn.optimizers"

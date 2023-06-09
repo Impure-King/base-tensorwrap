@@ -3,6 +3,8 @@
 import tensorwrap as tf
 from tensorwrap.module import Module
 
+__all__ = ["Activation", "ReLU"]
+
 class Activation(Module):
     __layer_tracker = 0
     def __init__(self, name = "activation"):
@@ -61,3 +63,7 @@ class ReLU(Activation):
             return tf.minimum(part1, self.max_value)
         else:
             return part1
+        
+# Inspection Fixes:
+Activation.__module__ = "tensorwrap.nn.activations"
+ReLU.__module__ = "tensorwrap.nn.activations"

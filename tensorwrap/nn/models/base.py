@@ -1,9 +1,8 @@
-"""Sets of functions that allow you to define a custom model or a Sequential model."""
-
 # Stable Modules:
 import jax
 import copy
 import tensorwrap as tf
+from jax import numpy as jnp
 from typing import (Any,
                     Tuple,
                     final)
@@ -13,17 +12,21 @@ from functools import partial
 # Custom built Modules:
 import tensorwrap as tf
 from tensorwrap.module import Module
-from tensorwrap.nn.layers import Layer
+from tensorwrap.nn.layers.base import Layer
+
+
+__all__ = ["Model", "Sequential"]
 
 class Model(Module):
     """ Main superclass for all models and loads any object as a PyTree with training and inference features."""
 
     _name_tracker = 0
 
-    def __init__(self, dynamic = False) -> None:
+    def __init__(self, dynamic = False, dtype = jnp.float32) -> None:
         super().__init__()
         self._compiled = False
         self._initialized = False
+        self.dtype = dtype
         
 
     def __layer_initializer(self, _object) -> None:
@@ -53,6 +56,7 @@ class Model(Module):
         self.metrics = metrics if metrics is not None else loss
         self._compiled = True
 
+        
         def complete_grad(params, x, y):
             y_pred = self.__call__(params, x)
             losses = self.loss_fn(y, y_pred)
@@ -101,6 +105,8 @@ class Model(Module):
         return self.__call__(self.trainable_variables, x)
 
 
+
+# Sequential models that create Forward-Feed Networks:
 class Sequential(Model):
     def __init__(self, layers: list = []) -> None:
         self.layers = layers
@@ -114,3 +120,8 @@ class Sequential(Model):
         for layer in self.layers:
             x = layer(params[layer.name], x)
         return x
+
+
+# Inspection Fixes:
+Model.__module__ = "tensorwrap.nn.models"
+Sequential.__module__ = "tensorwrap.nn.models"

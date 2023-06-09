@@ -9,6 +9,7 @@ import tensorwrap as tf
 # All classes allowed for export.
 __all__ = ["Module"]
 
+
 @register_pytree_node_class
 class Module(metaclass=ABCMeta):
     """ Basic neural network module class.
@@ -25,7 +26,26 @@ class Module(metaclass=ABCMeta):
     def __init__(self) -> None:
         """Helps instantiate the class and assign a self.trainable_variables to subclass."""
         self.trainable_variables = {}
-        self.unflattened = False
+        self.__unflattened = False
+
+    @classmethod
+    def __init_initialize__(cls):
+        """An extremely dangerous method which empties our the __init__ method and then create an instance. 
+        After, repurposing the __init__ again and it returns an instance with an empty init function. DO NOT USE for external uses."""
+        
+        # function to replace __init__ temporarily:
+        def init_rep(self):
+            self.trainable_variables = {}
+        prev_init = cls.__init__ # Storing __init__ functionality
+        
+        # Emptying and creating a new instance
+        cls.__init__ = init_rep
+        instance = cls()
+
+        # Reverting changes and returning instance
+        cls.__init__ = prev_init
+
+        return instance
 
     def __init_subclass__(cls) -> None:
         """Used to convert and register all the subclasses into Pytrees."""
@@ -35,12 +55,12 @@ class Module(metaclass=ABCMeta):
         """Maintains the call() convention for all subclasses."""
         return self.call(*args, **kwargs)
 
-    @abstractmethod
     def call(self, *args, **kwargs):
         """Acts as an abstract method to force all implementation to occur in the `call` method."""
         pass
 
     def tree_flatten(self):
+        self.__unflattened = True
         leaves = {}
         for key in self.trainable_variables:
             leaves[key] = self.trainable_variables[key]
@@ -49,18 +69,13 @@ class Module(metaclass=ABCMeta):
         aux_data = vars(self).copy()
 
         aux_data.pop("trainable_variables")
-        
         return leaves, aux_data
 
     @classmethod
     def tree_unflatten(cls, aux_data, children):
-        inputs = {}
-        par = [params.name for params in signature(cls.__init__).parameters.values()]
-        par.remove('self')
-        for key in par:
-            inputs[key] = aux_data[key]
-        instance = cls(**inputs)
-        instance.trainable_variables = children[0]
+        instance = cls.__init_initialize__()
+        vars(instance).update(children)
+        vars(instance).update(aux_data)
         return instance
     
 
