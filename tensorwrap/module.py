@@ -26,6 +26,7 @@ class Module(metaclass=ABCMeta):
     def __init__(self) -> None:
         """Helps instantiate the class and assign a self.trainable_variables to subclass."""
         self.trainable_variables = {}
+        self.trainable_weights = {}
         self.__unflattened = False
 
     @classmethod
@@ -74,7 +75,7 @@ class Module(metaclass=ABCMeta):
     @classmethod
     def tree_unflatten(cls, aux_data, children):
         instance = cls.__init_initialize__()
-        vars(instance).update(children)
+        instance.trainable_variables = children
         vars(instance).update(aux_data)
         return instance
     

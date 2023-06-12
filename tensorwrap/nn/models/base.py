@@ -22,19 +22,19 @@ class Model(Module):
 
     _name_tracker = 0
 
-    def __init__(self, dynamic = False, dtype = jnp.float32) -> None:
+    def __init__(self, dynamic = False, name="Model", dtype = jnp.float32) -> None:
         super().__init__()
         self._compiled = False
         self._initialized = False
         self.dtype = dtype
-        
+        self.name = f"{name}:{Model._name_tracker}"
+        Model._name_tracker += 1
 
     def __layer_initializer(self, _object) -> None:
         if isinstance(_object, (tf.nn.layers.Layer, tf.nn.activations.Activation)):
-            if _object.name == 'layer':
-                _object.name += f' {Model._name_tracker}'
-                Model._name_tracker += 1
-            self.trainable_variables[_object.name] = _object.trainable_variables
+            # Just removed the weird naming convention. Fix it for each different superclass.
+            self.trainable_variables[_object.id] = _object.trainable_variables
+            self.trainable_weights[_object.name] = _object.trainable_weights
 
     def call(self, params: dict, inputs: Any, *args, **kwargs) -> Any:
         pass
@@ -62,7 +62,7 @@ class Model(Module):
             losses = self.loss_fn(y, y_pred)
             return losses, y_pred
 
-        self._value_and_grad_fn = jax.value_and_grad(complete_grad, has_aux=True)
+        self._value_and_grad_fn = jax.jit(jax.value_and_grad(complete_grad, has_aux=True))
     
     def init(self, x):
         for attr_name in dir(self):
@@ -75,7 +75,7 @@ class Model(Module):
         self._initialized = True
         self.__call__(self.trainable_variables, x)
 
-
+    @jax.jit
     def train_step(self,
                    params,
                    x_train,
@@ -104,13 +104,15 @@ class Model(Module):
     def predict(self, x):
         return self.__call__(self.trainable_variables, x)
 
+    def __repr__(self) -> str:
+        return f"<tf.{self.name}>"
 
 
 # Sequential models that create Forward-Feed Networks:
 class Sequential(Model):
     def __init__(self, layers: list = []) -> None:
-        self.layers = layers
         super().__init__()
+        self.layers = layers
 
 
     def add(self, layer: Layer) -> None:
@@ -118,7 +120,7 @@ class Sequential(Model):
 
     def call(self, params: dict, x: Array) -> Array:
         for layer in self.layers:
-            x = layer(params[layer.name], x)
+            x = layer(params[layer.id], x)
         return x
 
 

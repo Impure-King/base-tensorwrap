@@ -25,10 +25,10 @@ class Layer(Module):
 
     _name_tracker: int = 0
 
-    def __init__(self, name: str = "layer_", dynamic = False, trainable: bool = True, dtype = jnp.float32, *args, **kwargs) -> None:
+    def __init__(self, name: str = "Layer", dynamic = False, trainable: bool = True, dtype = jnp.float32, *args, **kwargs) -> None:
         super().__init__()
         self.built = False
-        self.name = name + str(Layer._name_tracker)
+        self.name = name + ":" + str(Layer._name_tracker)
         self.trainable = trainable
         self.dynamic = dynamic
         self.id = Layer._name_tracker
@@ -86,6 +86,10 @@ class Layer(Module):
     def build(self, inputs: Tuple[int, ...] = None):
         self.built = True
 
+    # Displaying the names:
+    def __repr__(self) -> str:
+        return f"<tf.{self.name}>"
+
 
 # Dense Layer:
 
@@ -99,7 +103,6 @@ class Dense(Layer):
         kernel_initializer (Optional, str or Initializer)
     """
 
-    __name_tracker: int = 0
 
     def __init__(self,
                  units: int,
@@ -114,9 +117,6 @@ class Dense(Layer):
         self.use_bias = use_bias
         self.kernel_initializer = kernel_initializer
         self.bias_initializer = bias_initializer
-        self.name = 'dense_' + str(Dense.__name_tracker)
-        Dense.__name_tracker += 1
-        Layer._name_tracker += 1
 
     def build(self, input_shape):
         self.kernel = self.add_weights(shape = (input_shape[-1], self.units),
