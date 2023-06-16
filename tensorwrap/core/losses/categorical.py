@@ -4,7 +4,7 @@ from jax import numpy as jnp
 
 __all__ = ["_SparseCategoricalCrossentropy"]
 
-@jax.jit
+# @jax.jit
 def _SparseCategoricalCrossentropy(y_true, y_pred):
     y_true = jnp.asarray(y_true, dtype=jnp.int32)
     log_probs = jnp.log1p(y_pred)
