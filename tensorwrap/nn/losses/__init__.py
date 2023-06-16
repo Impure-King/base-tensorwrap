@@ -1,2 +1,3 @@
-from .base import mse
-from .base import mae
+from .base import Loss
+from .mean import (mse,
+                   mae)

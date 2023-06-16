@@ -1,21 +1,15 @@
+"""This module aims to provide a workable subclass for all the loss functions."""
+
 import tensorwrap as tf
-from jax import jit
+from tensorwrap.module import Module
 
-__all__ = ["mse", "mae"]
+class Loss(Module):
 
-def mse(y_true, y_pred):
-    """Calculates the mean square error of the predictions with respect to the true values."""
-    return tf.mean(tf.square(y_pred - y_true))
+    def __init__(self) -> None:
+        super().__init__()
+        pass
 
-
-def mae(y_true, y_pred):
-    return tf.mean(tf.abs(y_pred - y_true))
-
-# Inspection Fixes:
-mse.__module__ = "tensowrap.nn.losses"
-mae.__module__ = "tensorwrap.nn.losses"
-
-
-# Adding proper names:
-mse.__repr__ = "<function mse>"
-mae.__repr__ = "<function mae>"
+    def call(self, *args, **kwargs):
+        pass
+    def __call__(self, *args, **kwargs):
+        return self.call(*args, **kwargs)
