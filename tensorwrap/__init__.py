@@ -17,7 +17,9 @@ from tensorwrap.module import Module
 from tensorwrap.version import __version__
 from tensorwrap.experimental.serialize import save_model, load_model
 from tensorwrap.experimental.wrappers import function
-from tensorwrap.ops import last_dim, comprehend, jit_decoder, jit_encoder, object_decoder, object_encoder
+from tensorwrap.ops import (last_dim,
+                            randu,
+                            randn)
 
 # JAX Built-ins:
 from jax import (disable_jit,
@@ -41,4 +43,5 @@ from jax.numpy import (array as Variable,
                        max,
                        min,
                        maximum,
-                       minimum)
+                       minimum,
+                       zeros)
