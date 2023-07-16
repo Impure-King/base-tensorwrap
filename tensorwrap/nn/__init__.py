@@ -3,7 +3,7 @@ API as tf.keras from TensorFlow. It contains neural network modules that are
 contained in the original Keras API and aims to simplify computing and prototyping."""
 
 # Import Libraries:
-from . import optimizers
+# from . import optimizers
 from . import activations
 from . import initializers
 from . import callbacks
@@ -15,3 +15,6 @@ from . import layers
 
 from .models.base import Model
 from .models.base import Sequential
+
+# Integrated Libraries:
+import optax as optimizers

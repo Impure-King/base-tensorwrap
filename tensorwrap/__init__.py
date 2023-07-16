@@ -25,7 +25,7 @@ from tensorwrap.ops import (last_dim,
 from jax import (disable_jit,
                  value_and_grad,
                  grad)
-from jax.numpy import (array as Variable,
+from jax.numpy import (array as tensor,
                        arange as range,
                        expand_dims,
                        matmul,
