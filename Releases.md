@@ -12,7 +12,7 @@
 
 This is a minor update, whose stability isn't guaranteed unless version release 0.0.2.0. Just used to beta test and expand capabilities.
 
-## Version 0.0.1.1 Release Notes:
+## Version 0.0.1.2 Release Notes:
 
 **Major Changes**
 1. Broken Layer Subclasses removed:
