@@ -44,4 +44,6 @@ from jax.numpy import (array as tensor,
                        min,
                        maximum,
                        minimum,
-                       zeros)
+                       zeros,
+                       argmax,
+                       argmin)

@@ -162,8 +162,6 @@ class Model(Module):
         if epochs < 1:
             raise ValueError("Epochs must be a positive value.")
 
-        # Jitting Trainstep:
-        # step = jax.jit(self.train_step)
 
         for epoch in range(1, epochs + 1):
             self.trainable_variables, (loss, pred) = self.train_step(self.trainable_variables, x_train, y_train)

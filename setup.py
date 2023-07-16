@@ -23,7 +23,8 @@ install_requires = [
     "matplotlib",  # only needed for tensorboard export
     "pandas",
     "jaxtyping",
-    "optax"
+    "optax",
+    "tensorflow-datasets"
 ]
 
 tests_require = [

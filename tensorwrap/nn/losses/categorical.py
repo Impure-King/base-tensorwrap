@@ -7,8 +7,13 @@ class SparseCategoricalCrossentrophy(Loss):
         super().__init__()
         self.from_logits = from_logits
 
-    def call(self, labels, logits):
+    @jax.jit
+    def __call__(self, labels, logits):
+        num_classes = logits.shape[1]
+        labels = jax.nn.one_hot(labels, num_classes)
+
         if self.from_logits:
-            jax.nn.softmax(logits)
-        
-        return _SparseCategoricalCrossentropy(logits, labels)
+            logits = jax.nn.log_softmax(logits)
+
+        loss = -jax.numpy.sum(labels * logits, axis=1)
+        return loss.mean()
