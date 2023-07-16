@@ -1,5 +1,34 @@
+## Version 0.0.1.1 Release Notes:
 
-## Version 0.0.0.6 Prerelease Notes:
+**Major Changes**
+1. Broken Layer Subclasses removed:
+    1. ``tensorwrap.nn.layers.Lambda`` - Removed due to unstable jit issues and the lack of compatibility with current API.
+    2. All ``tensorwrap.nn.layers.Lambda`` subclassed layers have also been removed for fixes.
+2. Internal API for all models changed. Code has been largely simplified.
+3. ``tensorwrap.nn.optimizers`` has been temporarily depracated.
+    1. Currently, optimizer development is not support and all optimizers are broken.
+    2. Use of Optax optimizers is recommended. Docstring are updated for the migrations.
+4. Custom training loops have now been officially supported.
+5. Gradients have now been fixed.
+6. Required arguments are needed from many subclasses, due to the lessening of magic.
+
+**Minor Changes**
+1. ``tensorwrap.nn.models.Model``'s ``fit()`` function have suffered slowed downs.
+2. ``tensorwrap.nn.initializers.Initializer`` has been added for subclassing.
+3. ``tensorwrap.nn.layers.Dense`` no longer supports string initializer and requires ``tensorwrap.nn.initializers.Initializer`` subclass or a function as the initializer.
+
+**Current Problems/Gotchas**
+1. Certain jit compilations fail to provide speedups or cause leaks.
+2. Lack of guidelines on what to super() and what to not.
+
+This release is the most major haulover to date of the current architecture and philosophy. TensorWrap no longer aims to reconstruct TensorFlow on top of JAX. Instead, it aims to provide a magic free architecture that aims to fill the gaps 
+in the current JAX economy. Therefore, a lot of issues have been fixed and features have been simplified, to support a proper development and integration with other JAX tools like Optax. Additionally, this allows for an explicit API, which also doesn't stray
+from JAX's philosophy of letting the user mix their own custom modules while adhereing to minimal rules imposed by functional + object oriented programming.
+
+<hr>
+
+## Version 0.0.0.6 Release Notes:
+
 **Major Changes**
 1. New Layer subclasses have been added: 
     1. ``tensorwrap.nn.layers.Lambda`` - Superclasses layers with no variables, but instead certain functionality.
@@ -10,7 +39,6 @@
     1. ``tensorwrap.nn.layers.Flatten`` - Returns a flatten input tensor.
     2. ``tensorwrap.nn.layers.Concat`` - concatenates the input tensors and returns one output tensor.
 4. New Activation class has been added and ReLU activation is available to use.
-
 
 **Minor Changes**
 1. Jit compilation failure has been addressed.
