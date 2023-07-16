@@ -75,11 +75,23 @@ print(mse(100, 102))
 ```
 3) Custom Models
 ```python 
+import tensorwrap as tf
+from tensorwrap import nn
 
-class CheckPoint(Module):
-    def __init__(self, metrics) -> None:
-        
+class Sequential(nn.Model):
+    def __init__(self, layers: list) -> None:
+        super().__init__(name = "Sequential") # Starts the tracking of internal variables. Allows for name definition.
+        self.layers = layers
 
+    def __call__(self, inputs):
+        x = inputs
+        for layer in self.layers:
+            x = layer(x)
+        return x
+model = Sequential([
+    nn.layers.Dense(100),
+    nn.layers.Dense(10)
+])
 ```
 
 
