@@ -3,68 +3,81 @@ from typing import Any
 from abc import ABCMeta, abstractmethod
 from jax import jit
 from jax.tree_util import register_pytree_node_class
+from inspect import signature
+import tensorwrap as tf
 
 # All classes allowed for export.
 __all__ = ["Module"]
 
 
-class BaseModule(metaclass=ABCMeta):
-    """ This is the most basic template that defines all subclass items to be a pytree and accept arguments flexibly.
-    Don't use this template and instead refer to the Module Template, in order to create custom parts. If really needed,
-    use the PyTorch variation which will be suited for research."""
+@register_pytree_node_class
+class Module(metaclass=ABCMeta):
+    """ Basic neural network module class.
+    
+    A module class is a named container that acts to transform all subclassed containers into
+    pytrees by appropriately defining the tree_flatten and tree_unflatten. Additionally, it 
+    defines the trackable trainable_variables for all the subclasses.
+    
+    NOTE: Due to the limited functionality of the Module class, it isn't recommended for 
+    general or even research use. Additionally, the Module class lacks functionality of the 
+    original TensorFlow implementation, so avoid any implementations of this class. Only made
+    for internal use and public api placeholder."""
 
-    def __init__(self, *args, **kwargs) -> None:
-        # Setting all the argument attributes:
-        for key, value in enumerate(args):
-            setattr(self, f"arg_{key}", value)
+    def __init__(self) -> None:
+        """Helps instantiate the class and assign a self.trainable_variables to subclass."""
+        self.trainable_variables = {}
+        self.__unflattened = False
 
-        # Setting all the keyword argument attributes:
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    @classmethod
+    def __init_initialize__(cls):
+        """An extremely dangerous method which empties our the __init__ method and then create an instance. 
+        After, repurposing the __init__ again and it returns an instance with an empty init function. DO NOT USE for external uses."""
+        
+        # function to replace __init__ temporarily:
+        def init_rep(self):
+            self.trainable_variables = {}
+        prev_init = cls.__init__ # Storing __init__ functionality
+        
+        # Emptying and creating a new instance
+        cls.__init__ = init_rep
+        instance = cls()
 
-    # This function is responsible for making the subclasses into PyTrees:
+        # Reverting changes and returning instance
+        cls.__init__ = prev_init
+
+        return instance
+
     def __init_subclass__(cls) -> None:
+        """Used to convert and register all the subclasses into Pytrees."""
         register_pytree_node_class(cls)
 
     def __call__(self, *args, **kwargs) -> Any:
+        """Maintains the call() convention for all subclasses."""
         return self.call(*args, **kwargs)
 
-    @abstractmethod
     def call(self, *args, **kwargs):
+        """Acts as an abstract method to force all implementation to occur in the `call` method."""
         pass
 
-
-# Creating the unrolled tree class:
-class Module(BaseModule):
-    """This is the base class for all types of functions and components.
-    This is going to be a static type component, in order to allow jit.compile
-    from jax and accelerate the training process."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-    
-    def __init_subclass__(cls) -> None:
-        super().__init_subclass__()
-
     def tree_flatten(self):
-        dic = vars(self).copy()
-        aux_data = {}
+        self.__unflattened = True
+        leaves = {}
+        # for key in self.trainable_variables:
+        #     leaves[key] = self.trainable_variables[key]
+        
+        # Removing trainable_variables:
+        aux_data = vars(self).copy()
+        # aux_data.pop("trainable_variables")
 
-        # Removes the dynamic elements:
-        for key in dic.keys():
-            if isinstance(dic[key], str):
-                aux_data[key] = vars(self).pop(key)
-            elif isinstance(dic[key], bool):
-                aux_data[key] = vars(self).pop(key)
-
-        children = vars(self).values()
-        return (children, aux_data)
+        return leaves, aux_data
 
     @classmethod
     def tree_unflatten(cls, aux_data, children):
-        instance = cls(*children, **aux_data)
+        instance = cls.__init_initialize__()
+        instance.trainable_variables = children
+        vars(instance).update(aux_data)
         return instance
+    
 
-    def call(self):
-        pass
+
 

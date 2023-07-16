@@ -22,7 +22,8 @@ install_requires = [
     "dill",
     "matplotlib",  # only needed for tensorboard export
     "pandas",
-    "jaxtyping"
+    "jaxtyping",
+    "optax"
 ]
 
 tests_require = [
