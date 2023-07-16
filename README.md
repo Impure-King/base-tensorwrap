@@ -88,6 +88,7 @@ class Sequential(nn.Model):
         for layer in self.layers:
             x = layer(x)
         return x
+
 model = Sequential([
     nn.layers.Dense(100),
     nn.layers.Dense(10)
