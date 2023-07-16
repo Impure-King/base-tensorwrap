@@ -1,13 +1,13 @@
-## Version 0.0.1.1 Release Notes:
+## Version 0.0.1.2 Release Notes:
 
 **Major Changes**
 1. Broken Layer Subclasses removed:
     1. ``tensorwrap.nn.layers.Lambda`` - Removed due to unstable jit issues and the lack of compatibility with current API.
     2. All ``tensorwrap.nn.layers.Lambda`` subclassed layers have also been removed for fixes.
 2. Internal API for all models changed. Code has been largely simplified.
-3. ``tensorwrap.nn.optimizers`` has been temporarily depracated.
-    1. Currently, optimizer development is not support and all optimizers are broken.
-    2. Use of Optax optimizers is recommended. Docstring are updated for the migrations.
+3. ``tensorwrap.nn.optimizers`` has become a namespace for optax optimizers.
+    1. Currently, optimizer development is not support and all optimizers are broken. Therefore, optax optimizers have taken their place.
+    2. However, this unifying namespace allows for further development and addition of custom optimizers soon.
 4. Custom training loops have now been officially supported.
 5. Gradients have now been fixed.
 6. Required arguments are needed from many subclasses, due to the lessening of magic.
