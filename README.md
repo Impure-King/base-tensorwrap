@@ -11,9 +11,9 @@
 
 ## What is TensorWrap?
 
-TensorWrap is high performance neural network library that acts as a wrapper around [JAX](https://github.com/google/jax) (another high performance machine learning library), bringing the familiar feel of the [TensorFlow](https://tensorflow.org) (2.x.x). This is currently aimed towards prototyping over deployment, in the current state. 
+TensorWrap is high performance neural network library that acts as a wrapper around [JAX](https://github.com/google/jax) (another high performance machine learning library), bringing the familiar elements of the [TensorFlow](https://tensorflow.org) (2.x.x). This is currently aimed towards prototyping over deployment, in the current state. 
 
-TensorWrap works by creating a layer of abstraction over JAX's low level api and introducing similar TensorFlow-like component's while supporting native JAX operations. Additionally, the api has been updated to become more simpler and concise than TensorFlow's current API, by removing the redundant API's and deprecations that it possesses. Additionally, this library adds additional features and leverages JAX's optimizations, making it more friendly towards research and educational audiences.
+TensorWrap works by creating a layer of abstraction over JAX's low level api and introducing similar TensorFlow-like component's while supporting its own explicit and magic free design philosophy. This allows TensorWrap to be fast and efficient, while remaining nearly fully compatible with all custom operations and other tools from the JAX ecosystem. Additionally, this library adds additional features and leverages JAX's optimizations, making it more friendly towards research and educational audiences.
 
 This is a personal project, not professionally affliated with Google in any way. Expect bugs and several incompatibilities/difference from the original libraries.
 Please help by trying it out, [reporting
@@ -42,6 +42,7 @@ class Dense(nn.layers.Layer):
         self.units = units # Defining the output shape
   
     def build(self, input_shape: tuple) -> None:
+        super().build() # Required for letting model know that layer is built.
         input_shape = tf.shape(input_shape) # Getting appropriate input shape
         
         # Naming each parameter to later access from model.trainable_variables
@@ -51,10 +52,12 @@ class Dense(nn.layers.Layer):
         self.bias = self.add_weights([self.units],
                                      initializer = 'zeros',
                                      name='bias')
-        super().build() # Required for letting model know that layer is built.
+        
     
-    # Use call not __call__ to define the flow. No tf.function needed either.
-    def call(self, params, inputs):
+    # Use call not __call__ to define the flow. To support JIT compilation, we use staticmethod.
+    @staticmethod
+    @tf.function
+    def call(params, inputs):
         return inputs @ params['kernel'] + params['bias'] # Using params as an input, allows use to pass in the model.trainable_variables later.
  ```
 
