@@ -2,3 +2,4 @@
 
 from . import wrappers
 from . import serialize
+from . import data

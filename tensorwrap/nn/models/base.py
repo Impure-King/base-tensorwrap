@@ -1,4 +1,5 @@
 # Stable Modules:
+import time
 import jax
 import optax
 from jax import numpy as jnp
@@ -148,7 +149,8 @@ class Model(Module):
     def fit(self,
             x_train,
             y_train,
-            epochs = 1):
+            epochs = 1,
+            batch_size=32):
         """ Built-in in training method that updates gradients with minimalistic setup.
         
         Args:
@@ -162,12 +164,30 @@ class Model(Module):
         if epochs < 1:
             raise ValueError("Epochs must be a positive value.")
 
+        # Batching the data:
+        X_train_batched, y_train_batched = tf.experimental.data.Dataset(x_train).batch(batch_size), tf.experimental.data.Dataset(y_train).batch(batch_size)
 
+        batch_num = len(x_train)//batch_size
+        update_time = batch_num//20
+        prev_loss = "nan"
+        prev_acc = "nan"
+        metric = tf.randn((batch_num,))
         for epoch in range(1, epochs + 1):
-            self.trainable_variables, (loss, pred) = self.train_step(self.trainable_variables, x_train, y_train)
-            metric = self.metrics(y_train, pred)
-            print(f"Epoch: {epoch} \t\t Loss: {loss:.5f} \t\t Metrics: {metric:.5f}")
+            for index, (x_batch, y_batch) in enumerate(zip(X_train_batched, y_train_batched)):
+                self.trainable_variables, (loss, pred) = self.train_step(self.trainable_variables, x_batch, y_batch)
+                metric = metric.at[index].set(self.metrics(y_batch, pred))
+                if index % (update_time + 1) == 0:
+                    prev_loss = loss
+                    prev_acc = metric.mean()
+                self.__show_loading_animation(epoch, batch_num, index + 1, prev_loss, prev_acc)
+            print('\n')
         
+    def __show_loading_animation(self, epoch, total_batches, current_batch, loss, metric):
+        prefix = f'Epoch {epoch}: '
+        length = 30
+        filled_length = int(length * current_batch // total_batches)
+        bar = '=' * filled_length + '>' + '-' * (length - filled_length - 1)
+        print(f'\r{prefix} [{bar}] {current_batch}/{total_batches} \t Loss: {loss} \t metric: {metric}', end='', flush=True)
 
     def predict(self, x):
         return self.__call__(self.trainable_variables, x)

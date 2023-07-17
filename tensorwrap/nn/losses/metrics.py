@@ -27,4 +27,4 @@ class Accuracy(Loss):
 
         correct = jnp.sum(y_true == y_pred)
         total = y_true.shape[0]
-        return correct / total
+        return correct / total * 100
