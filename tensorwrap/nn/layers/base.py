@@ -65,6 +65,7 @@ class Layer(Module):
     def compute_output_shape(self):
         raise NotImplementedError("Method `compute_output_shape` has not been implemented.")
 
+    
     @final
     def __call__(self, params: dict, inputs: Array):
         if not self.built:

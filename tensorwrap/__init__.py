@@ -11,6 +11,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorwrap import nn
 from tensorwrap import test
 from tensorwrap import config
+from tensorwrap import experimental
 
 # Path Shortener:
 from tensorwrap.module import Module
@@ -24,7 +25,8 @@ from tensorwrap.ops import (last_dim,
 # JAX Built-ins:
 from jax import (disable_jit,
                  value_and_grad,
-                 grad)
+                 grad,
+                 vmap as vectorized_map)
 from jax.numpy import (array as tensor,
                        arange as range,
                        expand_dims,
@@ -44,4 +46,6 @@ from jax.numpy import (array as tensor,
                        min,
                        maximum,
                        minimum,
-                       zeros)
+                       zeros,
+                       argmax,
+                       argmin)
