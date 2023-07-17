@@ -171,6 +171,15 @@ class Model(Module):
 
     def predict(self, x):
         return self.__call__(self.trainable_variables, x)
+    
+    def evaluate(self, x, y):
+        if not self._compiled:
+            raise NotImplementedError("The model has not been compiled. Please compile using ``self.compile``.")
+        
+        pred = self.predict(x)
+        metric = self.metrics(y, pred)
+        loss = self.loss_fn(y, pred)
+        print(f"Epoch 1 \t\t\t Loss: {loss} \t\t\t metric: {metric}")
 
 
     def __call__(self, params = None, inputs = None) -> Any:
