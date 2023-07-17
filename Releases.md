@@ -1,4 +1,18 @@
-## Version 0.0.1.1 Release Notes:
+## Version 0.0.1.3 Release Notes:
+
+**Major Changes**
+1. ``tensorwrap.nn.layers.Lambda`` has been added back as a subclass.
+    1. Not all layers have been added yet. Only ``tensorwrap.nn.layers.Flatten`` has been added.
+    2. This change allows for the creation of weightless layers.
+2. ``tensorwrap.nn.losses.Accuracy`` and ``tensorwrap.nn.losses.SparseCategoricalCrossentropy`` has been added for classification purposes.
+
+**Current Problems/Gotchas**
+1. Certain jit compilations fail to provide speedups or cause leaks.
+2. Lack of guidelines on what to super() and what to not.
+
+This is a minor update, whose stability isn't guaranteed unless version release 0.0.2.0. Just used to beta test and expand capabilities.
+
+## Version 0.0.1.2 Release Notes:
 
 **Major Changes**
 1. Broken Layer Subclasses removed:
