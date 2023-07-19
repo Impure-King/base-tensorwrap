@@ -1,9 +1,11 @@
+import jax
+import random
 from jax import (numpy as np,
                  jit,
                  Array)
-
-import random
-import jax
+from typing import (Tuple,
+                    Optional,
+                    Any)
 
 @jit
 def last_dim(array: Array):
@@ -18,9 +20,19 @@ def last_dim(array: Array):
         return array
 
 
-def randu(shape, key = jax.random.PRNGKey(random.randint(1, 5))):
+def randu(shape: Tuple[int, ...], key = jax.random.PRNGKey(random.randint(1, 5))):
+    """Returns a uniformly distributed random tensor.
+    
+    Arguments:
+        - shape: A tuple containing the dimensions of the return tensor.
+        - key (Optional): A jax.random.PRNGKey that determines the reproducibility of the tensor."""
     return jax.random.uniform(key, shape, dtype=np.float32)
 
 
-def randn(shape, key = jax.random.PRNGKey(random.randint(1, 5))):
+def randn(shape: Tuple[int, ...], key = jax.random.PRNGKey(random.randint(1, 5))):
+    """Returns a normally distributed random tensor.
+    
+    Arguments:
+        - shape: A tuple containing the dimensions of the return tensor.
+        - key (Optional): A jax.random.PRNGKey that determines the reproducibility of the tensor."""
     return jax.random.normal(key, shape, dtype=np.float32)

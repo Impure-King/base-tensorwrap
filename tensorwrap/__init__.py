@@ -48,4 +48,6 @@ from jax.numpy import (array as tensor,
                        minimum,
                        zeros,
                        argmax,
-                       argmin)
+                       argmin,
+                       ones,
+                       squeeze)

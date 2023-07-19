@@ -67,11 +67,11 @@ class Layer(Module):
 
     
     @final
-    def __call__(self, params: dict, inputs: Array):
+    def __call__(self, params: dict, inputs: Array, *args, **kwargs):
         if not self.built:
             self.init_params(inputs)
             params = self.trainable_variables
-        out = self.call(params, inputs)
+        out = self.call(params, inputs, *args, **kwargs)
         return out
     
     

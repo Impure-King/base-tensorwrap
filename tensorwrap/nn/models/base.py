@@ -21,8 +21,8 @@ class Model(Module):
 
     All subclasses inherits Model attributes, training methods, and layer detection.
 
-    Args:
-        name (string): The name of the model.
+    Arguments:
+        - name (string): The name of the model.
     """
 
     _name_tracker = 0
@@ -39,8 +39,8 @@ class Model(Module):
 
         Checks each attribute of the object to gather all trainable variables.
 
-        Args:
-            obj (Any): The object whose attributes are to be checked.
+        Arguments:
+            - obj (Any): The object whose attributes are to be checked.
 
         NOTE: Private Method.
         """
@@ -67,8 +67,8 @@ class Model(Module):
         
         Returns a dictionary with names and trainable_variables of each trainable_layer.
         
-        Args:
-            inputs: Jax arrays that are used to determine the input shape and parameters.
+        Arguments:
+            - inputs: Jax arrays that are used to determine the input shape and parameters.
 
         Example::
             >>> model = SubclassedModel() # a subclassed ``Model`` instance
@@ -93,10 +93,10 @@ class Model(Module):
         
         Given the loss function, optimizer, metrics, it creates the Optax opt_state and the gradient based loss function as well.
 
-        Args:
-            loss: A function or ``tensorwrap.nn.losses.Loss`` subclass that has the arguments (y_true, y_pred) to compute the loss.
-            optimizer: An optax optimizer that have been initialized with learning_rate.
-            metrics: A function or ``tensorwrap.nn.losses.Loss`` subclass that has arguments (y_true, y_pred) to compute the metric.
+        Arguments:
+            - loss: A function or ``tensorwrap.nn.losses.Loss`` subclass that has the arguments (y_true, y_pred) to compute the loss.
+            - optimizer: An optax optimizer that have been initialized with learning_rate.
+            - metrics: A function or ``tensorwrap.nn.losses.Loss`` subclass that has arguments (y_true, y_pred) to compute the metric.
 
         Example::
             >>> model = SubclassedModel() # a subclassed ``Model`` instance
@@ -153,12 +153,13 @@ class Model(Module):
             batch_size=32):
         """ Built-in in training method that updates gradients with minimalistic setup.
         
-        Args:
-            x_train: The labels array.
-            y_train: The targets array.
-            epochs: Number of repetition for gradient updates.
+        Arguments:
+            - x_train: The labels array.
+            - y_train: The targets array.
+            - epochs: Number of repetition for gradient updates.
+            - batch_size: The size of batches for the training data.
 
-        NOTE: Doesn't support batching and requires initiating of parameters and compilation of loss function
+        NOTE: Doesn't support validation and requires initiating of parameters and compilation of loss function
         and optimizers.
         """
         if epochs < 1:
@@ -183,14 +184,19 @@ class Model(Module):
             print('\n')
         
     def __show_loading_animation(self, epoch, total_batches, current_batch, loss, metric):
+        """Helper function that shows the loading animation, when training the model."""
         prefix = f'Epoch {epoch}: '
         length = 30
         filled_length = int(length * current_batch // total_batches)
         bar = '=' * filled_length + '>' + '-' * (length - filled_length - 1)
         print(f'\r{prefix} [{bar}] {current_batch}/{total_batches} \t Loss: {loss} \t metric: {metric}', end='', flush=True)
 
-    def predict(self, x):
-        return self.__call__(self.trainable_variables, x)
+    def predict(self, inputs: jax.Array) -> jax.Array:
+        """Returns the predictions, when given inputs for the model.
+        
+        Arguments:
+            - inputs: Proprocessed JAX arrays that can be used to calculate an output."""
+        return self.__call__(self.trainable_variables, inputs)
     
     def evaluate(self, x, y):
         if not self._compiled:

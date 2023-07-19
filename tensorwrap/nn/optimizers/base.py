@@ -1,3 +1,5 @@
+"""The former optimizer class has been depracated in favor of """
+
 import jax
 from ...module import Module
 from jaxtyping import Array
@@ -5,11 +7,10 @@ from jaxtyping import Array
 __all__ = ["Optimizer", "gradient_descent"]
 
 class Optimizer(Module):
-
     def __init__(self, lr=0.01):
         self.lr = lr
         if not NotImplemented:
-            raise NotImplementedError
+            raise NotImplementedError("Implement the init function for the learning rate.")
         
     def call(self):
         pass
