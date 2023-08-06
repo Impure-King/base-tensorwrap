@@ -42,9 +42,10 @@ class Layer(Module):
         ---------
         Arguments:
             - shape: Shape of the inputs and the units
-            - initializer: The initial values of the weights
-            - name: The name of the weight.
-            - trainable (Optional) - Not required or implemented yet. """
+            - initializer (Optional): The initial values of the weights. Defaults to tensorwrap.nn.initializers.GlorotNormal()
+            - name(Optional): The name of the weight. Defaults to "unnamed weight".
+            - trainable (Optional) - Not required or implemented yet. 
+        """
         
         weight = initializer(shape)
 
@@ -74,7 +75,6 @@ class Layer(Module):
         out = self.call(params, inputs, *args, **kwargs)
         return out
     
-    
     def call(self, params: dict, inputs: Array):
         raise NotImplementedError("Call Method Missing:\nPlease define the control flow in the call method.")
 
@@ -91,9 +91,9 @@ class Dense(Layer):
     ---------
     Arguments:
         - units (int): A positive integer representing the output shape.
-        - activation (Optional, str or Activation): Activation function to use. Defaults to None.
         - use_bias (Optional, bool): A boolean signifying whether to include a bias term.
-        - kernel_initializer (Optional, str or Initializer): An initializer function that returns 
+        - kernel_initializer (Optional, Initializer): An initializer class that initializes kernel weight. Defaults to tensorwrap.nn.intializers.GlorotUniform().
+        - kernel_initializer (Optional, Initializer): An initializer class that initializes bias weight. Defaults to tensorwrap.nn.intializers.Zeros().
     """
 
 

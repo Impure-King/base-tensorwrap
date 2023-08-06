@@ -16,8 +16,8 @@ class Activation(Module):
         raise NotImplementedError("Please implement the call function to define control flow.")
 
 
-    def __call__(self, inputs):
-        return self.call(inputs)
+    def __call__(self, *args, **kwargs):
+        return self.call(*args, **kwargs)
 
 class ReLU(Activation):
     

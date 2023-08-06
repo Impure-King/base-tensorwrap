@@ -1,18 +1,15 @@
 # Stable Modules:
-import time
+from typing import Any, Tuple, final
+
 import jax
 import optax
 from jax import numpy as jnp
-from typing import (Any,
-                    Tuple,
-                    final)
 from jaxtyping import Array
 
 # Custom built Modules:
 import tensorwrap as tf
 from tensorwrap.module import Module
 from tensorwrap.nn.layers.base import Layer
-
 
 __all__ = ["Model", "Sequential"]
 
@@ -72,7 +69,7 @@ class Model(Module):
 
         Example::
             >>> model = SubclassedModel() # a subclassed ``Model`` instance
-            >>> array = tensorwrap.Variable([...]) # An array with same input shape as the inputs.
+            >>> array = tensorwrap.tensor([...]) # An array with same input shape as the inputs.
             >>> params = model.init_params(array) # Initializes the parameters and input shapes
             >>> # Asserting the equivalence of the returned value and parameters.
             >>> print(params == model.trainable_variables)
@@ -100,7 +97,7 @@ class Model(Module):
 
         Example::
             >>> model = SubclassedModel() # a subclassed ``Model`` instance
-            >>> array = tensorwrap.Variable([...]) # An array with same input shape as the inputs.
+            >>> array = tensorwrap.tensor([...]) # An array with same input shape as the inputs.
             >>> params = model.init_params(array) # Initializes the parameters and input shapes
             >>> # Compiling:
             >>> import optax
@@ -183,13 +180,18 @@ class Model(Module):
                 self.__show_loading_animation(epoch, batch_num, index + 1, prev_loss, prev_acc)
             print('\n')
         
+
     def __show_loading_animation(self, epoch, total_batches, current_batch, loss, metric):
-        """Helper function that shows the loading animation, when training the model."""
+        """Helper function that shows the loading animation, when training the model.
+        
+        NOTE: Private method.
+        """
         prefix = f'Epoch {epoch}: '
         length = 30
         filled_length = int(length * current_batch // total_batches)
         bar = '=' * filled_length + '>' + '-' * (length - filled_length - 1)
         print(f'\r{prefix} [{bar}] {current_batch}/{total_batches} \t Loss: {loss} \t metric: {metric}', end='', flush=True)
+
 
     def predict(self, inputs: jax.Array) -> jax.Array:
         """Returns the predictions, when given inputs for the model.
@@ -198,6 +200,7 @@ class Model(Module):
             - inputs: Proprocessed JAX arrays that can be used to calculate an output."""
         return self.__call__(self.trainable_variables, inputs)
     
+
     def evaluate(self, x, y):
         if not self._compiled:
             raise NotImplementedError("The model has not been compiled. Please compile using ``self.compile``.")
@@ -208,9 +211,10 @@ class Model(Module):
         print(f"Epoch 1 \t\t\t Loss: {loss} \t\t\t metric: {metric}")
 
 
-    def __call__(self, params = None, inputs = None) -> Any:
+    def __call__(self, params = None, *args, **kwargs) -> Any:
         if not self._init:
             raise NotImplementedError("The model is not initialized using ``self.init_params``.")
+
 
     def __repr__(self) -> str:
         return f"<tf.{self.name}>"
