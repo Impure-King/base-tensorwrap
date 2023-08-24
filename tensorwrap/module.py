@@ -1,10 +1,10 @@
-import jax
-from typing import Any
+# Stable Modules
 from abc import ABCMeta, abstractmethod
+from inspect import signature
+from typing import Any
+
 from jax import jit
 from jax.tree_util import register_pytree_node_class
-from inspect import signature
-import tensorwrap as tf
 
 # All classes allowed for export.
 __all__ = ["Module"]
@@ -26,8 +26,6 @@ class Module(metaclass=ABCMeta):
     def __init__(self) -> None:
         """Helps instantiate the class and assign a self.trainable_variables to subclass."""
         self.trainable_variables = {}
-        self.__unflattened = False
-
     @classmethod
     def __init_initialize__(cls):
         """An extremely dangerous method which empties our the __init__ method and then create an instance. 
@@ -51,16 +49,11 @@ class Module(metaclass=ABCMeta):
         """Used to convert and register all the subclasses into Pytrees."""
         register_pytree_node_class(cls)
 
-    def __call__(self, *args, **kwargs) -> Any:
-        """Maintains the call() convention for all subclasses."""
-        return self.call(*args, **kwargs)
-
     def call(self, *args, **kwargs):
         """Acts as an abstract method to force all implementation to occur in the `call` method."""
         pass
 
     def tree_flatten(self):
-        self.__unflattened = True
         leaves = {}
         # for key in self.trainable_variables:
         #     leaves[key] = self.trainable_variables[key]

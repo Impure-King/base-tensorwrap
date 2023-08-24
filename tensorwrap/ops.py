@@ -7,7 +7,7 @@ from typing import (Tuple,
                     Optional,
                     Any)
 
-@jit
+
 def last_dim(array: Array):
     r"""Returns the last dimension of the array, list, or integer. Used internally for Dense Layers and Compilations.
     

@@ -6,8 +6,11 @@ contained in the original Keras API and aims to simplify computing and prototypi
 import optax as optimizers
 
 # Import Libraries:
-# from . import optimizers
-from . import activations, callbacks, initializers, layers, losses, models
-from .models.base import Model, Sequential
+from tensorwrap.nn import activations, callbacks, initializers, losses, layers, models
+
 
 # Path Shorteners:
+from .models.base_models import Model, Sequential
+
+# Deprecated Modules:
+# from tensorwrap.nn import optimizers

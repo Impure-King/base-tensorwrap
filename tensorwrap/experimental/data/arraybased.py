@@ -4,9 +4,11 @@ from ...module import Module
 
 class Dataset(Module):
     def __init__(self, data) -> None:
-        self.data = tf.tensor(data)
+        self.data = jax.numpy.array(data)
     
     def batch(self, batch_size, drop_remainder = True):
+        if len(self.data) < batch_size:
+            raise ValueError("batch_size can't be greater than data size.")
         num_batches = len(self.data)//batch_size
         batched_data = jax.numpy.array([self.data[i * batch_size: (i + 1) * batch_size] for i in range(num_batches)])
         return Dataset(batched_data)

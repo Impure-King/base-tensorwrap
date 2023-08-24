@@ -9,7 +9,7 @@ from jaxtyping import Array
 # Custom built Modules:
 import tensorwrap as tf
 from tensorwrap.module import Module
-from tensorwrap.nn.layers.base import Layer
+from tensorwrap.nn.layers.base_layers import Layer
 
 __all__ = ["Model", "Sequential"]
 
@@ -29,7 +29,12 @@ class Model(Module):
         self._init = False
         self.name = f"{name}:{Model._name_tracker}"
         Model._name_tracker += 1
+        self._compiled = False
 
+    def __init_subclass__(cls) -> None:
+        """Registers all subclasses as Pytrees and changes conventions."""
+        super().__init_subclass__()
+        cls.__call__ = cls.call
     
     def __check_attributes(self, obj: Any):
         """A recursive trainable_variable gatherer.
@@ -43,7 +48,7 @@ class Model(Module):
         """
 
         if isinstance(obj, tf.nn.layers.Layer):
-            self.trainable_variables[obj.name] = obj.trainable_variables
+            self.trainable_variables[obj.name] = obj.trainable_variables[obj.name]
         elif isinstance(obj, list):
             for item in obj:
                 if self.__check_attributes(item):
@@ -77,7 +82,8 @@ class Model(Module):
         """
         self._init = True
         self.__check_attributes(self)
-        self.__call__(self.trainable_variables, inputs)
+        with jax.disable_jit():
+            self.call(self.trainable_variables, inputs)
         self.__check_attributes(self)
         return self.trainable_variables
     
@@ -126,7 +132,6 @@ class Model(Module):
 
         self._value_and_grad_fn = jax.value_and_grad(compute_grad, has_aux=True)
     
-    
     def train_step(self,
                    params,
                    x_train,
@@ -174,9 +179,9 @@ class Model(Module):
             for index, (x_batch, y_batch) in enumerate(zip(X_train_batched, y_train_batched)):
                 self.trainable_variables, (loss, pred) = self.train_step(self.trainable_variables, x_batch, y_batch)
                 metric = metric.at[index].set(self.metrics(y_batch, pred))
-                if index % (update_time + 1) == 0:
-                    prev_loss = loss
-                    prev_acc = metric.mean()
+                # if index % (update_time + 1) == 0:
+                prev_loss = loss
+                prev_acc = metric.mean()
                 self.__show_loading_animation(epoch, batch_num, index + 1, prev_loss, prev_acc)
             print('\n')
         
@@ -198,7 +203,7 @@ class Model(Module):
         
         Arguments:
             - inputs: Proprocessed JAX arrays that can be used to calculate an output."""
-        return self.__call__(self.trainable_variables, inputs)
+        return self.call(self.trainable_variables, inputs)
     
 
     def evaluate(self, x, y):
@@ -211,7 +216,7 @@ class Model(Module):
         print(f"Epoch 1 \t\t\t Loss: {loss} \t\t\t metric: {metric}")
 
 
-    def __call__(self, params = None, *args, **kwargs) -> Any:
+    def call(self, params = None, *args, **kwargs) -> Any:
         if not self._init:
             raise NotImplementedError("The model is not initialized using ``self.init_params``.")
 
@@ -222,22 +227,19 @@ class Model(Module):
 
 # Sequential models that create Forward-Feed Networks:
 class Sequential(Model):
-    def __init__(self, layers: list = []) -> None:
-        super().__init__()
+    def __init__(self, layers: list = [], name = "Sequential") -> None:
+        super().__init__(name=name)
         self.layers = layers
 
 
     def add(self, layer: Layer) -> None:
         self.layers.append(layer)
 
-    
-    def __call__(self, params: dict, x: Array) -> Array:
-        super().__call__()
+    # @jax.jit
+    def call(self, params: dict, x: Array) -> Array:
+        super().call()
         for layer in self.layers:
-            if isinstance(layer, Layer):
-                x = layer(params[layer.name], x)
-            else:
-                x = layer(x)
+            x = layer(params, x)
         return x
 
 

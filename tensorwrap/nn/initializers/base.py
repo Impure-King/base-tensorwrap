@@ -1,7 +1,8 @@
 from typing import Any
 import tensorwrap as tf
+from tensorwrap.module import Module
 
-class Initializer:
+class Initializer(Module):
     def __init__(self) -> None:
         pass
 
