@@ -217,18 +217,12 @@ class Model(Module):
         X_train_batched, y_train_batched = tw.experimental.data.Dataset(x_train).batch(batch_size), tw.experimental.data.Dataset(y_train).batch(batch_size)
 
         batch_num = len(x_train)//batch_size
-        prev_loss = "nan"
-        prev_acc = "nan"
-        metric = tw.randn((batch_num,))
-        train = jax.jit(self.train_step)
         for epoch in range(1, epochs + 1):
             print(f"Epoch {epoch}/{epochs}")
             for index, (x_batch, y_batch) in enumerate(zip(X_train_batched, y_train_batched)):
-                self.trainable_variables, (loss, pred) = train(self.trainable_variables, x_batch, y_batch)
-                metric = metric.at[index].set(self.metrics(y_batch, pred))
-                prev_loss = loss
-                prev_acc = metric.mean()
-                self.__show_loading_animation(batch_num, index + 1, prev_loss, prev_acc)
+                self.trainable_variables, (loss, pred) = self.train_step(self.trainable_variables, x_batch, y_batch)
+                metric = self.metrics(y_batch, pred)
+                self.__show_loading_animation(batch_num, index + 1, loss, metric)
             print('\n')
         
 
@@ -240,7 +234,7 @@ class Model(Module):
         length = 30
         filled_length = int(length * current_batch // total_batches)
         bar = '=' * filled_length + '>' + '-' * (length - filled_length - 1)
-        print(f'\r{current_batch}/{total_batches} [{bar}]    -    loss: {loss:.4f}    -    metric: {metric:.4f}', end='', flush=True)
+        print(f'\r{current_batch}/{total_batches} [{bar}]    -    loss: {loss}    -    metric: {metric}', end='', flush=True)
 
 
     def predict(self, inputs: jax.Array) -> jax.Array:
@@ -251,14 +245,11 @@ class Model(Module):
         return self.call(self.trainable_variables, inputs)
     
 
-    def evaluate(self, x, y):
-        if not self._compiled:
-            raise NotImplementedError("The model has not been compiled. Please compile using ``self.compile``.")
-        
+    def evaluate(self, x, y, loss_fn, metric_fn):
         pred = self.predict(x)
-        metric = self.metrics(y, pred)
-        loss = self.loss_fn(y, pred)
-        print(f"Epoch 1 \t\t\t Loss: {loss} \t\t\t metric: {metric}")
+        metric = metric_fn(y, pred)
+        loss = loss_fn(y, pred)
+        self.__show_loading_animation(1, 1, loss, metric)
 
 
     def call(self, params = None, *args, **kwargs) -> Any:

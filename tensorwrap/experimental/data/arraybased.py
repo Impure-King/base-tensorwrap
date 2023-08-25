@@ -42,3 +42,6 @@ class Dataset(Module):
     @property
     def shape(self):
         return self.data.shape
+    
+    def len(self):
+        return len(self.data)
