@@ -51,7 +51,7 @@ tests_require = [
 setup(
     name="tensorwrap",
     version=__version__,
-    description="TensorWrap: A high level TensorFlow wrapper for JAX.",
+    description="TensorWrap: A high level interface aimed towards rapid prototyping and intuitive workflow for JAX.",
     long_description="\n\n".join([README]),
     long_description_content_type="text/markdown",
     classifiers=[

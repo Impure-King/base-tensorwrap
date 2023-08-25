@@ -4,16 +4,28 @@ from ...module import Module
 
 class Dataset(Module):
     def __init__(self, data) -> None:
-        self.data = tf.tensor(data)
+        self.data = jax.numpy.array(data)
     
-    def batch(self, batch_size, drop_remainder = True):
-        num_batches = len(self.data)//batch_size
-        batched_data = jax.numpy.array([self.data[i * batch_size: (i + 1) * batch_size] for i in range(num_batches)])
+    def batch(self, batch_size, drop_remainder=True, axis=0):
+        
+        # Validating size:
+        if len(self.data) < batch_size:
+            raise ValueError("batch_size can't be greater than data size.")
+        
+        # Finding remainder:
+        remainder = self.data.shape[axis]%batch_size
+
+        if drop_remainder:
+            batch_data_prep = self.data[0:self.data.shape[axis] - remainder]
+        else:
+            batch_data_prep = self.data
+        
+        batched_data = batch_data_prep.reshape((-1, batch_size) + self.data.shape[1:])
         return Dataset(batched_data)
     
     def map(self, function):
-        new_data = jax.numpy.array([function(i) for i in self.data])
-        return new_data
+        new_data = jax.numpy.stack([function(i) for i in self.data])
+        return Dataset(new_data)
 
     def vmap(self, function):
         """The vectorized version of map that works well for most arrays."""
@@ -26,3 +38,7 @@ class Dataset(Module):
     
     def __iter__(self):
         return iter(self.data)
+    
+    @property
+    def shape(self):
+        return self.data.shape

@@ -1,5 +1,4 @@
 test.ipynb
-tensorwrap/nn/layers.py
 tensorwrap/__pycache__/__init__.cpython-310.pyc
 tensorwrap/__pycache__/config.cpython-310.pyc
 tensorwrap/__pycache__/module.cpython-310.pyc

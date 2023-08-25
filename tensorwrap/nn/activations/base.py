@@ -11,13 +11,13 @@ class Activation(Module):
         self.name = name + str(Activation.__layer_tracker)
         Activation.__layer_tracker += 1
     
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        cls.__call__ = cls.call
 
-    def call(self, inputs):
+    def call(self, params, inputs):
         raise NotImplementedError("Please implement the call function to define control flow.")
 
-
-    def __call__(self, inputs):
-        return self.call(inputs)
 
 class ReLU(Activation):
     
@@ -37,7 +37,7 @@ class ReLU(Activation):
             raise ValueError("Max_value cannot be negative.")
     
 
-    def call(self, inputs):
+    def call(self, params, inputs):
         part1 = tf.maximum(0, inputs - self.threshold)
         if self.max_value is not None:
             return tf.minimum(part1, self.max_value)

@@ -1,22 +1,16 @@
 # Stable Modules:
+from random import randint
+from typing import Tuple, final
+
 import jax
-import numpy as np
-from jax import (jit,
-                 numpy as jnp)
 from jax.random import PRNGKey
 from jaxtyping import Array
-from random import randint
-from typing import (Any,
-                    Tuple,
-                    final)
 
 # Custom built Modules:
-import tensorwrap as tf
-from ...module import Module
-from ...nn.initializers import (GlorotNormal,
-                                GlorotUniform, 
-                                Initializer,
-                                Zeros)
+# import tensorwrap as tf
+
+from tensorwrap.module import Module
+from tensorwrap.nn.initializers import GlorotNormal, GlorotUniform, Initializer, Zeros
 
 __all__ = ["Layer", "Dense"]
 
@@ -31,26 +25,28 @@ class Layer(Module):
 
     def __init__(self, name: str = "Layer") -> None:
         self.built = False
-        self.trainable_variables = {}
         # Name Handling:
         self.name = name + ":" + str(Layer._name_tracker)
         self.id = Layer._name_tracker
         Layer._name_tracker += 1
+
+        self.trainable_variables = {self.name:{}}
 
     def add_weights(self, shape: Tuple[int, ...], key = PRNGKey(randint(1, 1000)), initializer:Initializer = GlorotNormal(), name = 'unnamed weight', trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
         ---------
         Arguments:
             - shape: Shape of the inputs and the units
-            - initializer: The initial values of the weights
-            - name: The name of the weight.
-            - trainable (Optional) - Not required or implemented yet. """
+            - initializer (Optional): The initial values of the weights. Defaults to tensorwrap.nn.initializers.GlorotNormal()
+            - name(Optional): The name of the weight. Defaults to "unnamed weight".
+            - trainable (Optional) - Not required or implemented yet. 
+        """
         
         weight = initializer(shape)
 
         # Adding to the trainable variables:
         if trainable:
-            self.trainable_variables[name] = weight
+            self.trainable_variables[self.name][name] = weight
 
         return weight
 
@@ -62,21 +58,24 @@ class Layer(Module):
         self.built=True
         return self.trainable_variables
 
-    def compute_output_shape(self):
-        raise NotImplementedError("Method `compute_output_shape` has not been implemented.")
+    # Future idea to automize layer building.
+    # def compute_output_shape(self):
+    #     raise NotImplementedError("Method `compute_output_shape` has not been implemented.")
 
-    
+    def get_weights(self, name):
+        return self.trainable_variables[self.name][name]
+
     @final
-    def __call__(self, params: dict, inputs: Array):
+    def __call__(self, params: dict, inputs: Array, *args, **kwargs):
         if not self.built:
             self.init_params(inputs)
-            params = self.trainable_variables
-        out = self.call(params, inputs)
+            params = self.trainable_variables # To be accepted in the format.
+        out = self.call(params[self.name], inputs, *args, **kwargs)
         return out
     
-    
-    def call(self, params: dict, inputs: Array):
-        raise NotImplementedError("Call Method Missing:\nPlease define the control flow in the call method.")
+    def call(self, params, inputs):
+        if NotImplemented:
+            raise NotImplementedError("Call Method Missing:\nPlease define the control flow in the call method.")
 
 
     # Displaying the names:
@@ -91,9 +90,9 @@ class Dense(Layer):
     ---------
     Arguments:
         - units (int): A positive integer representing the output shape.
-        - activation (Optional, str or Activation): Activation function to use. Defaults to None.
         - use_bias (Optional, bool): A boolean signifying whether to include a bias term.
-        - kernel_initializer (Optional, str or Initializer): An initializer function that returns 
+        - kernel_initializer (Optional, Initializer): An initializer class that initializes kernel weight. Defaults to tensorwrap.nn.intializers.GlorotUniform().
+        - kernel_initializer (Optional, Initializer): An initializer class that initializes bias weight. Defaults to tensorwrap.nn.intializers.Zeros().
     """
 
 
@@ -109,8 +108,10 @@ class Dense(Layer):
         self.bias_initializer = bias_initializer
 
     def build(self, inputs):
-        self.input_shape = tf.shape(inputs)
-        self.kernel = self.add_weights(shape = (self.input_shape[-1], self.units),
+        input_shape = jax.numpy.shape(inputs)
+        if len(input_shape) < 2:
+            raise ValueError(f"Input dimensions is {len(input_shape)}. Expected Input Dimensions of 2.\n Use `tensorwrap.nn.expand_dims(inputs, axis=1)` to increase input shape.")
+        self.kernel = self.add_weights(shape = (input_shape[-1], self.units),
                                        initializer = self.kernel_initializer,
                                        name = "kernel")
         if self.use_bias:
@@ -122,10 +123,10 @@ class Dense(Layer):
             self.trainable_variables['bias'] = self.bias
 
 
-    @staticmethod
     @jax.jit
-    def call(params: dict, inputs: Array) -> Array:
-        if params['bias'] is None:
+    def call(self, params: dict, inputs: Array) -> Array:
+        # super().call()
+        if not self.use_bias:
             return inputs @ params['kernel']
         
         x = inputs @ params['kernel'] + params['bias']

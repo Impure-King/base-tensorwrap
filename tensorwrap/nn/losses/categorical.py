@@ -2,7 +2,7 @@ from tensorwrap.core.losses import _SparseCategoricalCrossentropy
 from tensorwrap.nn.losses import Loss
 import jax
 
-class SparseCategoricalCrossentrophy(Loss):
+class SparseCategoricalCrossentropy(Loss):
     def __init__(self, from_logits = False) -> None:
         super().__init__()
         self.from_logits = from_logits

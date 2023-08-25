@@ -1,2 +1,2 @@
-from .base import (Optimizer,
+from tensorwrap.nn.optimizers.base import (Optimizer,
                    gradient_descent)

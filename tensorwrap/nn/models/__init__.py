@@ -1,4 +1,4 @@
 """Contains all the model related components"""
 
-from .base import Model
-from .base import Sequential
+from tensorwrap.nn.models.base_models import Model, Sequential
+from tensorwrap.nn.models.train import training_loop

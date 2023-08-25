@@ -3,13 +3,13 @@ from jax import jit
 from tensorwrap.nn.losses import Loss
 
 class Accuracy(Loss):
-    def __init__(self) -> None:
+    def __init__(self, from_logits = True) -> None:
         super().__init__()
-        pass
+        self.logits = from_logits
     
-    @staticmethod
+    
     @jit
-    def __call__(y_true, y_pred, from_logits=True):
+    def __call__(self, y_true, y_pred):
         """Computes the accuracy metric.
 
         Args:
@@ -22,7 +22,7 @@ class Accuracy(Loss):
             float: The accuracy value.
 
         """
-        if from_logits:
+        if self.logits:
             y_pred = jnp.argmax(y_pred, axis=-1)
 
         correct = jnp.sum(y_true == y_pred)
