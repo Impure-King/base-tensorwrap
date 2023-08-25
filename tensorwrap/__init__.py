@@ -44,6 +44,7 @@ from jax.numpy import squeeze as squeeze
 from jax.numpy import stack as stack
 from jax.numpy import sum as sum
 from jax.numpy import zeros as zeros
+from jax.numpy import asarray as convert_to_tensor
 
 # Library Paths:
 

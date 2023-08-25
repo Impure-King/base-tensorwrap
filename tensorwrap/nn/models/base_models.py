@@ -1,5 +1,5 @@
 # Stable Modules:
-from typing import Any, Tuple, final
+from typing import Any, Tuple, final, Dict, Optional
 
 import jax
 import optax
@@ -7,32 +7,49 @@ from jax import numpy as jnp
 from jaxtyping import Array
 
 # Custom built Modules:
-import tensorwrap as tf
+import tensorwrap as tw
 from tensorwrap.module import Module
 from tensorwrap.nn.layers.base_layers import Layer
+from tensorwrap.nn.losses.base import Loss
 
 __all__ = ["Model", "Sequential"]
 
-class Model(Module):
-    """A custom module for subclassing for all model classes.
 
-    All subclasses inherits Model attributes, training methods, and layer detection.
+class Model(Module):
+    """A Module subclass that can be further subclasses for more complex models that don't
+    work with Sequential class.
 
     Arguments:
         - name (string): The name of the model.
+    
+    Returns:
+        - Model: An empty Model class that has prebuilt methods like compile, fit, predict, evaluate, and etc.
+    
+    NOTE: Recommended only for subclassing use.
     """
 
+    # Used for tracking Model names.
     _name_tracker = 0
 
-    def __init__(self, name:str = "Model"):
+    def __init__(self, name:str = "Model") -> None:
+
+        # Trainable Variables are tracked across all subclasses.
         self.trainable_variables = {}
-        self._init = False
+
+        # Name Tracking Handling:
         self.name = f"{name}:{Model._name_tracker}"
         Model._name_tracker += 1
+
+        # Private attributes that track the state of each method:
+        self._init = False
         self._compiled = False
 
     def __init_subclass__(cls) -> None:
-        """Registers all subclasses as Pytrees and changes conventions."""
+        """Registers all subclasses as Pytrees and changes ``call`` conventions.
+        Requires no arguments.
+
+        NOTE: Private Method for internal uses.
+        """
         super().__init_subclass__()
         cls.__call__ = cls.call
     
@@ -44,10 +61,10 @@ class Model(Module):
         Arguments:
             - obj (Any): The object whose attributes are to be checked.
 
-        NOTE: Private Method.
+        NOTE: Private Method for internal uses.
         """
 
-        if isinstance(obj, tf.nn.layers.Layer):
+        if isinstance(obj, tw.nn.layers.Layer):
             self.trainable_variables[obj.name] = obj.trainable_variables[obj.name]
         elif isinstance(obj, list):
             for item in obj:
@@ -63,14 +80,14 @@ class Model(Module):
                     return True
         return False
 
-
-    def init_params(self, inputs: jax.Array):
-        """An instance that initiates all the trainable_variables and sets up all the layer inputs.
-        
-        Returns a dictionary with names and trainable_variables of each trainable_layer.
+    def init_params(self, inputs: jax.Array) -> Dict[str, Dict[str, jax.Array]]:
+        """An method that initiates all the trainable_variables and sets up all the layer inputs.
         
         Arguments:
-            - inputs: Jax arrays that are used to determine the input shape and parameters.
+            - inputs (jax.Array): Jax arrays that are used to determine the input shape and parameters.
+        
+        Returns:
+            - Dict[str, ...]: A dictionary with names and trainable_variables of each trainable_layer.
 
         Example::
             >>> model = SubclassedModel() # a subclassed ``Model`` instance
@@ -80,18 +97,22 @@ class Model(Module):
             >>> print(params == model.trainable_variables)
             True
         """
+        
         self._init = True
         self.__check_attributes(self)
+
+        # Prevents any problems during setup.
         with jax.disable_jit():
             self.call(self.trainable_variables, inputs)
+        
         self.__check_attributes(self)
         return self.trainable_variables
     
     
     def compile(self,
-                loss,
+                loss:Loss,
                 optimizer,
-                metrics = None):
+                metrics:Optional[Loss] = None) -> None:
         """An instance method that compiles the model's prebuilt fit method.
         
         Given the loss function, optimizer, metrics, it creates the Optax opt_state and the gradient based loss function as well.
@@ -114,12 +135,19 @@ class Model(Module):
             )
         """
 
+        # Checks in Model is initiated.
         if not self._init:
-            raise NotImplementedError("The model is not initialized using ``self.init_params``.")
+            raise NotImplementedError(
+                "Originated from ``model.compile``"
+                "The model has not been initialized using ``model.init_params``."
+            )
 
+        # Getting the best
         self.loss_fn = loss
         self.optimizer = optimizer
         self.metrics = metrics if metrics is not None else loss
+        
+        # Handling compilation state:
         self._compiled = True
 
         # Prepping the optimizer:
@@ -130,18 +158,27 @@ class Model(Module):
             losses = self.loss_fn(y, y_pred)
             return losses, y_pred
 
-        self._value_and_grad_fn = jax.value_and_grad(compute_grad, has_aux=True)
+        self._value_and_grad_fn = jax.jit(jax.value_and_grad(compute_grad, has_aux=True))
     
     def train_step(self,
-                   params,
-                   x_train,
-                   y_train) -> Tuple[Any, Tuple[int, int]]:
-        """ Notes:
-            Avoid using when using new loss functions or optimizers.
-                - This assumes that the loss function arguments are (y_true, y_pred)."""
-        if not self._compiled:
-            raise NotImplementedError("The model has not been compiled using ``model.compile``.")
+                   params: Dict[str, Dict[str, jax.Array]],
+                   x_train: jax.Array,
+                   y_train: jax.Array) -> Tuple[dict, Tuple[int, jax.Array]]:
+        """A prebuilt method that computes loss and grads while updating 
+        the trainable variables.
+
+        Arguments:
+            - params (Dict[str, ...]): A dictionary of trainable_variables.
+            - x_train: The inputs or features.
+            - y_train: The outputs or labels.
         
+        Returns:
+            - params (Dict[str, ...]): The dictionary of updated variables.
+            - losses (int): A integer value of the losses.
+            - y_pred (jax.Array): An array of predictions.
+        
+        NOTE: Private method for internal use.
+        """
         (losses, y_pred), grads = self._value_and_grad_fn(params, x_train, y_train)
         updates, self.__opt_state = self.optimizer.update(grads, self.__opt_state)
         params = optax.apply_updates(params, updates)
@@ -151,8 +188,8 @@ class Model(Module):
     def fit(self,
             x_train,
             y_train,
-            epochs = 1,
-            batch_size=32):
+            epochs:int = 1,
+            batch_size:int = 32):
         """ Built-in in training method that updates gradients with minimalistic setup.
         
         Arguments:
@@ -165,37 +202,45 @@ class Model(Module):
         and optimizers.
         """
         if epochs < 1:
-            raise ValueError("Epochs must be a positive value.")
+            raise ValueError(
+                "Originated from ``model.fit``"
+                "Epochs must be a positive value."
+            )
+        
+        if not self._compiled:
+            raise NotImplementedError(
+                "Originated from ``model.fit``."
+                "The model has not been compiled using ``model.compile``."
+            )
 
         # Batching the data:
-        X_train_batched, y_train_batched = tf.experimental.data.Dataset(x_train).batch(batch_size), tf.experimental.data.Dataset(y_train).batch(batch_size)
+        X_train_batched, y_train_batched = tw.experimental.data.Dataset(x_train).batch(batch_size), tw.experimental.data.Dataset(y_train).batch(batch_size)
 
         batch_num = len(x_train)//batch_size
-        update_time = batch_num//20
         prev_loss = "nan"
         prev_acc = "nan"
-        metric = tf.randn((batch_num,))
+        metric = tw.randn((batch_num,))
+        train = jax.jit(self.train_step)
         for epoch in range(1, epochs + 1):
+            print(f"Epoch {epoch}/{epochs}")
             for index, (x_batch, y_batch) in enumerate(zip(X_train_batched, y_train_batched)):
-                self.trainable_variables, (loss, pred) = self.train_step(self.trainable_variables, x_batch, y_batch)
+                self.trainable_variables, (loss, pred) = train(self.trainable_variables, x_batch, y_batch)
                 metric = metric.at[index].set(self.metrics(y_batch, pred))
-                # if index % (update_time + 1) == 0:
                 prev_loss = loss
                 prev_acc = metric.mean()
-                self.__show_loading_animation(epoch, batch_num, index + 1, prev_loss, prev_acc)
+                self.__show_loading_animation(batch_num, index + 1, prev_loss, prev_acc)
             print('\n')
         
 
-    def __show_loading_animation(self, epoch, total_batches, current_batch, loss, metric):
+    def __show_loading_animation(self, total_batches, current_batch, loss, metric):
         """Helper function that shows the loading animation, when training the model.
         
         NOTE: Private method.
         """
-        prefix = f'Epoch {epoch}: '
         length = 30
         filled_length = int(length * current_batch // total_batches)
         bar = '=' * filled_length + '>' + '-' * (length - filled_length - 1)
-        print(f'\r{prefix} [{bar}] {current_batch}/{total_batches} \t Loss: {loss} \t metric: {metric}', end='', flush=True)
+        print(f'\r{current_batch}/{total_batches} [{bar}]    -    loss: {loss:.4f}    -    metric: {metric:.4f}', end='', flush=True)
 
 
     def predict(self, inputs: jax.Array) -> jax.Array:
