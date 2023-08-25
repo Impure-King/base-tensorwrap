@@ -1,3 +1,26 @@
+## Version 0.0.1.5 Release Notes:
+
+**Major Changes**
+1. ``tensorwrap.nn.layers.ConvND`` has been added back as a subclass.
+    1. Convolutions now available in any dimension
+2. ``tensorwrap.nn.losses.Accuracy`` and ``tensorwrap.nn.losses.SparseCategoricalCrossentropy`` has been added for classification purposes.
+3. ``tensorwrap.experimental.data.Dataset`` batching speed has been improved and fixed.
+
+**Minor Changes**
+1. ``tensorwrap.nn.models.Model.fit()`` has been improved through various jit improvements.
+2. Overall jit compilation failures have been fixed.
+3. Updated some aesthetics.
+
+This is a minor update, which aimed to improve aesthetics and provide a few more layers to play with. Additionally, some speed ups have been provided.
+
+**Current Problems/Gotchas**
+1. Certain jit compilations fail to provide speedups or cause leaks.
+2. Lack of guidelines on what to super() and what to not.
+
+This is a minor update, whose stability isn't guaranteed unless version release 0.0.2.0. Just used to beta test and expand capabilities.
+
+<hr>
+
 ## Version 0.0.1.3 Release Notes:
 
 **Major Changes**
