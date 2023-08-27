@@ -158,7 +158,7 @@ class Model(Module):
             losses = self.loss_fn(y, y_pred)
             return losses, y_pred
 
-        self._value_and_grad_fn = jax.jit(jax.value_and_grad(compute_grad, has_aux=True))
+        self._value_and_grad_fn = jax.value_and_grad(compute_grad, has_aux=True)
     
     def train_step(self,
                    params: Dict[str, Dict[str, jax.Array]],
@@ -271,7 +271,7 @@ class Sequential(Model):
     def add(self, layer: Layer) -> None:
         self.layers.append(layer)
 
-    # @jax.jit
+
     def call(self, params: dict, x: Array) -> Array:
         super().call()
         for layer in self.layers:

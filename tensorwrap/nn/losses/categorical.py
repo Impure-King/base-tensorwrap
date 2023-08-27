@@ -7,7 +7,7 @@ class SparseCategoricalCrossentropy(Loss):
         super().__init__()
         self.from_logits = from_logits
 
-    @jax.jit
+    # @jax.jit
     def __call__(self, labels, logits):
         num_classes = logits.shape[1]
         labels = jax.nn.one_hot(labels, num_classes)

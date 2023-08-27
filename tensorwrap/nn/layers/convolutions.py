@@ -107,7 +107,7 @@ class ConvND(Layer):
         self.dn = _convert_to_lax_conv_dimension_numbers(inputs.ndim - 2)
         self.column = (1,) * (len(in_shape) - 2)
 
-    @jax.jit
+
     def convolve(self, params, inputs):
         """Basic Convolution Operator."""
         return jax.lax.conv_general_dilated(
@@ -120,7 +120,7 @@ class ConvND(Layer):
             self.dn
         )
     
-    @jax.jit
+    
     def call(self, params, inputs):
         out = self.convolve(params, inputs)
         bias_shape = (1,) * (self.rank + 1) + (self.filter_no,)    

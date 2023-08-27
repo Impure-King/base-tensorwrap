@@ -32,7 +32,7 @@ class Flatten(Lambda):
         else:
             self.input_shape = jnp.prod(jnp.array(input_shape))
 
-    @jit
+    
     def call(self, params, inputs) -> Any:
         return jnp.reshape(inputs, [inputs.shape[0], self.input_shape])
 
