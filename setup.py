@@ -24,7 +24,9 @@ install_requires = [
     "pandas",
     "jaxtyping",
     "optax",
-    "tensorflow-datasets"
+    "tensorflow-datasets",
+    "termcolor",
+    "tensorflow"
 ]
 
 tests_require = [
