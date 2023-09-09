@@ -1,2 +1,2 @@
-from .base import (Activation,
+from .base_activations import (Activation,
                    ReLU)

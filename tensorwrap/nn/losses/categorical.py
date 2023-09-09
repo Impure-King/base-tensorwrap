@@ -1,4 +1,3 @@
-from tensorwrap.core.losses import _SparseCategoricalCrossentropy
 from tensorwrap.nn.losses import Loss
 import jax
 
@@ -7,8 +6,7 @@ class SparseCategoricalCrossentropy(Loss):
         super().__init__()
         self.from_logits = from_logits
 
-    # @jax.jit
-    def __call__(self, labels, logits):
+    def call(self, labels, logits):
         num_classes = logits.shape[1]
         labels = jax.nn.one_hot(labels, num_classes)
 

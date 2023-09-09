@@ -156,12 +156,11 @@ class Model(Module):
         def compute_grad(params, x, y):
             y_pred = self.__call__(params, x)
             losses = self.loss_fn(y, y_pred)
-            return losses, y_pred
+            return losses
 
-        self._value_and_grad_fn = jax.value_and_grad(compute_grad, has_aux=True)
-    
+        self._value_and_grad_fn = jax.value_and_grad(compute_grad)
+
     def train_step(self,
-                   params: Dict[str, Dict[str, jax.Array]],
                    x_train: jax.Array,
                    y_train: jax.Array) -> Tuple[dict, Tuple[int, jax.Array]]:
         """A prebuilt method that computes loss and grads while updating 
@@ -179,10 +178,10 @@ class Model(Module):
         
         NOTE: Private method for internal use.
         """
-        (losses, y_pred), grads = self._value_and_grad_fn(params, x_train, y_train)
-        updates, self.__opt_state = self.optimizer.update(grads, self.__opt_state)
-        params = optax.apply_updates(params, updates)
-        return params, (losses, y_pred)
+        losses, grads = self._value_and_grad_fn(self.trainable_variables, x_train, y_train)
+        updates, self.__opt_state = self.optimizer.update(grads, self.__opt_state, self.trainable_variables)
+        self.trainable_variables = optax.apply_updates(self.trainable_variables, updates)
+        return losses
 
 
     def fit(self,
@@ -219,8 +218,10 @@ class Model(Module):
         batch_num = len(x_train)//batch_size
         for epoch in range(1, epochs + 1):
             print(f"Epoch {epoch}/{epochs}")
+            prev = self.trainable_variables
             for index, (x_batch, y_batch) in enumerate(zip(X_train_batched, y_train_batched)):
-                self.trainable_variables, (loss, pred) = self.train_step(self.trainable_variables, x_batch, y_batch)
+                loss = self.train_step(x_batch, y_batch)
+                pred = self.predict(x_batch)
                 metric = self.metrics(y_batch, pred)
                 self.__show_loading_animation(batch_num, index + 1, loss, metric)
             print('\n')
@@ -236,16 +237,39 @@ class Model(Module):
         bar = '=' * filled_length + '>' + '-' * (length - filled_length - 1)
         print(f'\r{current_batch}/{total_batches} [{bar}]    -    loss: {loss}    -    metric: {metric}', end='', flush=True)
 
+    def loading_animation(self, total_batches, current_batch, loss, metric, val_loss = None, val_metric = None):
+        length = 30
+        filled_length = int(length * current_batch // total_batches)
+        bar = '=' * filled_length + '>' + '-' * (length - filled_length - 1)
+        if val_loss is None:
+            val_loss_str = ""
+        else:
+            val_loss_str = f"    -    val_loss: {val_loss:.5f}"
+        
+        if val_metric is None:
+            val_met_str = ""
+        else:
+            val_met_str = f"    -    val_loss: {val_metric:.5f}"
+        print(f'\r{current_batch}/{total_batches} [{bar}]    -    loss: {loss:.5f}    -    metric: {metric:.5f}' + val_loss_str + val_met_str, end='', flush=True)
 
     def predict(self, inputs: jax.Array) -> jax.Array:
         """Returns the predictions, when given inputs for the model.
         
         Arguments:
             - inputs: Proprocessed JAX arrays that can be used to calculate an output."""
-        return self.call(self.trainable_variables, inputs)
+        return self.__call__(self.trainable_variables, inputs)
     
 
-    def evaluate(self, x, y, loss_fn, metric_fn):
+    def evaluate(self, x, y, loss_fn = None, metric_fn = None):
+        if loss_fn is None and metric_fn is None:
+            if not self._compiled:
+                raise NotImplementedError(
+                "Originated from ``model.evaluate``."
+                "The model has not been compiled using ``model.compile``."
+            )
+            else:
+                metric_fn = self.metrics
+                loss_fn = self.loss_fn
         pred = self.predict(x)
         metric = metric_fn(y, pred)
         loss = loss_fn(y, pred)

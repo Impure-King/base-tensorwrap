@@ -1,14 +1,13 @@
-import jax
+# Stable Modules:
 import random
-from jax import (numpy as np,
-                 jit,
-                 Array)
-from typing import (Tuple,
-                    Optional,
-                    Any)
+from typing import Tuple
+
+import jax
+from jax import Array
+from jax import numpy as np
 
 
-def last_dim(array: Array):
+def last_dim(array: Array) -> int:
     r"""Returns the last dimension of the array, list, or integer. Used internally for Dense Layers and Compilations.
     
     Arguments:
@@ -20,7 +19,7 @@ def last_dim(array: Array):
         return array
 
 
-def randu(shape: Tuple[int, ...], key = jax.random.PRNGKey(random.randint(1, 5))):
+def randu(shape: Tuple[int, ...], key = jax.random.PRNGKey(random.randint(1, 5))) -> Array:
     """Returns a uniformly distributed random tensor.
     
     Arguments:
@@ -29,7 +28,7 @@ def randu(shape: Tuple[int, ...], key = jax.random.PRNGKey(random.randint(1, 5))
     return jax.random.uniform(key, shape, dtype=np.float32)
 
 
-def randn(shape: Tuple[int, ...], key = jax.random.PRNGKey(random.randint(1, 5))):
+def randn(shape: Tuple[int, ...], key = jax.random.PRNGKey(random.randint(1, 5))) -> Array:
     """Returns a normally distributed random tensor.
     
     Arguments:

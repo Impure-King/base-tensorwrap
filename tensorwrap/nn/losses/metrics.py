@@ -8,8 +8,7 @@ class Accuracy(Loss):
         self.logits = from_logits
     
     
-    @jit
-    def __call__(self, y_true, y_pred):
+    def call(self, y_true, y_pred):
         """Computes the accuracy metric.
 
         Args:
