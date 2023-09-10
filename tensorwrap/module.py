@@ -25,7 +25,7 @@ class Module(metaclass=ABCMeta):
 
     def __init__(self) -> None:
         """Helps instantiate the class and assign a self.trainable_variables to subclass."""
-        self.trainable_variables = {}
+        self.params = {}
     @classmethod
     def __init_initialize__(cls):
         """An extremely dangerous method which empties our the __init__ method and then create an instance. 
@@ -67,7 +67,7 @@ class Module(metaclass=ABCMeta):
     @classmethod
     def tree_unflatten(cls, aux_data, children):
         instance = cls.__init_initialize__()
-        instance.trainable_variables = children
+        instance.params = children
         vars(instance).update(aux_data)
         return instance
     

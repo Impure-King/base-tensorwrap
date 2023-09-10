@@ -42,7 +42,7 @@ class ConvND(Layer):
                  filter_no, 
                  filter_shape,
                  strides, 
-                 padding="VALID",
+                 padding="valid",
                  kernel_initializer: Initializer = GlorotUniform(),
                  bias_initializer: Initializer = Zeros(),
                  groups = 1, 
@@ -130,7 +130,7 @@ class ConvND(Layer):
 
 
 class Conv1D(ConvND):
-    def __init__(self, filter_no, filter_shape, strides, padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, name: str = "Conv"):
+    def __init__(self, filter_no, filter_shape, strides = (1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, name: str = "Conv"):
         super().__init__(rank=1, 
                          filter_no=filter_no, 
                          filter_shape=filter_shape, 
@@ -142,7 +142,7 @@ class Conv1D(ConvND):
                          name=name)
 
 class Conv2D(ConvND):
-    def __init__(self, filter_no, filter_shape, strides, padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, name: str = "Conv"):
+    def __init__(self, filter_no, filter_shape, strides = (1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, name: str = "Conv"):
         super().__init__(rank=2, 
                          filter_no=filter_no, 
                          filter_shape=filter_shape, 

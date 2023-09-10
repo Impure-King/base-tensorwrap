@@ -35,7 +35,7 @@ class Model(Module):
     def __init__(self, name:str = "Model") -> None:
 
         # Trainable Variables are tracked across all subclasses.
-        self.trainable_variables = {}
+        self.params = {}
 
         # Name Tracking Handling:
         self.name = f"{name}:{Model._name_tracker}"
@@ -66,7 +66,7 @@ class Model(Module):
         """
 
         if isinstance(obj, tw.nn.layers.Layer):
-            self.trainable_variables[obj.name] = obj.trainable_variables[obj.name]
+            self.params[obj.name] = obj.params[obj.name]
         elif isinstance(obj, list):
             for item in obj:
                 if self.__check_attributes(item):
@@ -104,10 +104,10 @@ class Model(Module):
 
         # Prevents any problems during setup.
         with jax.disable_jit():
-            self.call(self.trainable_variables, inputs)
+            self.call(self.params, inputs)
         
         self.__check_attributes(self)
-        return self.trainable_variables
+        return self.params
     
 
     def predict(self, inputs: jax.Array) -> jax.Array:
@@ -115,7 +115,7 @@ class Model(Module):
         
         Arguments:
             - inputs: Proprocessed JAX arrays that can be used to calculate an output."""
-        return self.__call__(self.trainable_variables, inputs)
+        return self.__call__(self.params, inputs)
     
 
     def evaluate(self, x, y, loss_fn, metric_fn):

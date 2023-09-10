@@ -12,25 +12,40 @@ class History(Module):
         super().__init__()
         self.epoch = 1
         self.dict = {}
+        self.decipher_dict = {
+            "loss": 0,
+            "metrics": 1,
+            "val_loss": 2,
+            "val_metrics": 3
+        }
+    
+    def get(self, name):
+        if name == "epochs":
+            return jax.numpy.array(list(self.dict.keys()))
+        return jax.numpy.array(list(self.dict.values()))[:, self.decipher_dict[name]]
 
     def __call__(self, loss_value, metrics_value, val_loss, val_metrics):
-        epoch_dict = {
-            "loss": loss_value,
-            "metrics": metrics_value,
-            "val_loss": val_loss,
-            "val_metrics": val_metrics
-        }
-        self.dict[self.epoch] = epoch_dict
+        epoch_list = [
+            loss_value,
+            metrics_value,
+            val_loss,
+            val_metrics
+        ]
+        self.dict[self.epoch] = epoch_list
         self.epoch += 1
+
 # Creating a Training Class:
 class Train(Module):
     def __init__(self, model, loss_fn, optimizer, metric_fn, copy_model = True) -> None:
         super().__init__()
         self.loss_fn = loss_fn
         self.metric_fn = metric_fn
-        self.model = copy.deepcopy(model)
+        if copy_model:
+            self.model = copy.deepcopy(model)
+        else:
+            self.model = model
         self.optimizer = optimizer
-        self.state = self.optimizer.init(self.model.trainable_variables)
+        self.state = self.optimizer.init(self.model.params)
         self.history = History()
 
         @jax.value_and_grad
@@ -49,28 +64,27 @@ class Train(Module):
             val_loss = None
             val_metrics = None
         compiled_update = jax.jit(self.update)
-        self.trainable_variables = [self.model.trainable_variables]
         for epoch in range(1, epochs+1):
             print(f"Epoch {epoch}/{epochs}")
             for index, (X, y) in enumerate(zip(X_train_batched, y_train_batched)): 
-                self.model.trainable_variables, losses, self.state = compiled_update(self.model.trainable_variables, self.state, X, y)
-                self.trainable_variables.append(self.model.trainable_variables)
-                metrics = self.metric_fn(y, self.model(self.model.trainable_variables, X))
+                self.model.params, losses, self.state = compiled_update(self.model.params, self.state, X, y)
+                metrics = self.metric_fn(y, self.model(self.model.params, X))
                 if validation_data is not None:
-                    val_loss, val_metrics = compile_val_score(self.model.trainable_variables, X_valid, y_valid)
+                    val_loss, val_metrics = compile_val_score(self.model.params, X_valid, y_valid)
                 self.loading_animation(X_train_batched.len(), index+1, losses, metrics, val_loss=val_loss, val_metric=val_metrics)
             self.history(losses, metrics, val_loss, val_metrics)
             for callback in callbacks:
                 callback(self.history)
             print("\n") 
     
-    def return_params(self):
-        return self.model.trainable_variables
 
-    def return_model(self):
+    def get_params(self):
+        return self.model.params
+
+    def get_model(self):
         return self.model
     
-    def return_train_history(self):
+    def get_train_history(self):
         return self.history
     
     def evaluate(self, X_test, y_test):
