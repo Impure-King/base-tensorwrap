@@ -49,7 +49,7 @@ class Dense(Layer):
                                          name="bias")
 
 
-
+    @jax.jit
     def call(self, params: dict, inputs: Array) -> Array:
         if not self.use_bias:
             return inputs @ params['kernel']

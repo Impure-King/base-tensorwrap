@@ -287,7 +287,6 @@ class Sequential(Model):
     def add(self, layer: Layer) -> None:
         self.layers.append(layer)
 
-
     def call(self, params: dict, x: Array) -> Array:
         super().call()
         for layer in self.layers:

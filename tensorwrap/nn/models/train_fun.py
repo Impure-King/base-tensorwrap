@@ -39,7 +39,7 @@ class Train(Module):
     def __init__(self, model, loss_fn, optimizer, metric_fn, copy_model = True) -> None:
         super().__init__()
         self.loss_fn = loss_fn
-        self.metric_fn = metric_fn
+        self.metric_fn = jax.jit(metric_fn)
         if copy_model:
             self.model = copy.deepcopy(model)
         else:
@@ -69,9 +69,10 @@ class Train(Module):
             for index, (X, y) in enumerate(zip(X_train_batched, y_train_batched)): 
                 self.model.params, losses, self.state = compiled_update(self.model.params, self.state, X, y)
                 metrics = self.metric_fn(y, self.model(self.model.params, X))
-                if validation_data is not None:
+                self.loading_animation(X_train_batched.len(), index+1, losses, metrics)
+            if validation_data is not None:
                     val_loss, val_metrics = compile_val_score(self.model.params, X_valid, y_valid)
-                self.loading_animation(X_train_batched.len(), index+1, losses, metrics, val_loss=val_loss, val_metric=val_metrics)
+            self.loading_animation(X_train_batched.len(), index+1, losses, metrics, val_loss=val_loss, val_metric=val_metrics)
             self.history(losses, metrics, val_loss, val_metrics)
             for callback in callbacks:
                 callback(self.history)
@@ -116,39 +117,3 @@ class Train(Module):
         else:
             val_met_str = f"    -    val_metrics: {val_metric:.5f}"
         print(f'\rBatch {current_batch}/{total_batches} [{bar}]    -    loss: {loss:.5f}    -    metric: {metric:.5f}' + val_loss_str + val_met_str, end='', flush=True)
-
-# @tw.value_and_grad
-# def grad_fn(params, X, y):
-#     pred = model(params, X)
-#     return loss_fn(y, pred)
-
-
-# @tw.function
-# def update(params, state, X, y):
-#     losses, grads = grad_fn(params, X, y)
-#     updates, state = optimizer.update(grads, state, params)
-#     params = optimizers.apply_updates(params, updates)
-#     return params, losses, state
-
-# @tw.function
-# def validation(params, X, y):
-#     pred = model(params, X)
-#     return metrics(y, pred)
-
-# def train(epochs, X_train, y_train, batch_size, model, metric_fn, validation_data = None):
-#     global state
-#     X_train_batched = tw.experimental.data.Dataset(X_train).batch(batch_size)
-#     y_train_batched = tw.experimental.data.Dataset(y_train).batch(batch_size)
-#     if validation_data is not None:
-#         X_valid, y_valid = validation_data
-#     else:
-#         val_metrics = "NA"
-#     for epoch in range(1, epochs+1):
-#         print(f"Epoch {epoch}/{epochs}")
-#         for index, (X, y) in enumerate(zip(X_train_batched, y_train_batched)): 
-#             model.trainable_variables, losses, state = update(model.trainable_variables, state, X, y)
-#             accuracy = metric_fn(y, model(model.trainable_variables, X))
-#             if validation_data is not None:
-#                 val_metrics = validation(model.trainable_variables, X_valid, y_valid)
-#             model.loading_animation(X_train_batched.len(), index+1, losses, accuracy, val_metric=val_metrics)
-#         print("\n")    

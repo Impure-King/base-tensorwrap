@@ -22,7 +22,7 @@ class Accuracy(Loss):
 
         """
         if self.logits:
-            y_pred = jnp.argmax(y_pred, axis=-1)
+            y_pred = jnp.expand_dims(jnp.argmax(y_pred, axis=-1), axis=-1)
 
         correct = jnp.sum(y_true == y_pred)
         total = y_true.shape[0]
