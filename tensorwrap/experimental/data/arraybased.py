@@ -1,4 +1,5 @@
 import jax
+import random
 import tensorwrap as tf
 from ...module import Module
 
@@ -30,6 +31,10 @@ class Dataset(Module):
     def vmap(self, function):
         """The vectorized version of map that works well for most arrays."""
         new_data = jax.vmap(function)(self.data)
+        return Dataset(new_data)
+    
+    def shuffle(self, axis=0, key=random.randint(1, 42)):
+        new_data = jax.random.permutation(jax.random.PRNGKey(key), self.data, axis=axis)
         return Dataset(new_data)
     
     def first(self):

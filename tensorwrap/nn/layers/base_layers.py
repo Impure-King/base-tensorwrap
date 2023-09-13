@@ -27,7 +27,7 @@ class Layer(Module):
         self.id = Layer._name_tracker
         Layer._name_tracker += 1
 
-        self.trainable_variables = {self.name:{}}
+        self.params = {self.name:{}}
 
     def add_weights(self, shape: Tuple[int, ...], key = PRNGKey(randint(1, 1000)), initializer:Initializer = GlorotNormal(), name = 'unnamed weight', trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
@@ -43,7 +43,7 @@ class Layer(Module):
 
         # Adding to the trainable variables:
         if trainable:
-            self.trainable_variables[self.name][name] = weight
+            self.params[self.name][name] = weight
 
         return weight
 
@@ -53,20 +53,20 @@ class Layer(Module):
     def init_params(self, inputs):
         self.build(inputs)
         self.built=True
-        return self.trainable_variables
+        return self.params
 
     # Future idea to automize layer building.
     # def compute_output_shape(self):
     #     raise NotImplementedError("Method `compute_output_shape` has not been implemented.")
 
     def get_weights(self, name):
-        return self.trainable_variables[self.name][name]
+        return self.params[self.name][name]
 
     @final
     def __call__(self, params: dict, inputs: Array, *args, **kwargs):
         if not self.built:
             self.init_params(inputs)
-            params = self.trainable_variables # To be accepted in the format.
+            params = self.params # To be accepted in the format.
         out = self.call(params[self.name], inputs, *args, **kwargs)
         return out
     

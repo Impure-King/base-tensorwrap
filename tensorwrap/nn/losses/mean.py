@@ -1,30 +1,29 @@
-import tensorwrap as tf
-from jax import jit
-from tensorwrap.core.losses import (_mse,
-                                    _mae)
+from tensorwrap.nn.losses import Loss
+from jax import numpy as jnp
 
 __all__ = ["mse", "mae"]
 
-def mse(y_true, y_pred):
-    """Calculates the mean square error of the predictions with respect to the true values."""
-    try:
-        return _mse(y_true, y_pred)
-    except:
-        tf.mean(tf.square(y_pred - y_true))
+class MeanSquaredError(Loss):
+    def __init__(self) -> None:
+        super().__init__()
+        pass
 
+    def call(self, y_pred, y_true):
+        return jnp.mean((y_true - y_pred)**2)
 
-def mae(y_true, y_pred):
-    try:
-        return _mae(y_true, y_pred)
-    except:
-        return tf.mean(tf.abs(y_pred - y_true))
+class MeanAbsoluteError(Loss):
+    def __init__(self) -> None:
+        super().__init__()
+        pass
 
+    def call(self, y_pred, y_true):
+        return jnp.mean(jnp.abs(y_true - y_pred))
 
 # Inspection Fixes:
-mse.__module__ = "tensowrap.nn.losses"
-mae.__module__ = "tensorwrap.nn.losses"
+MeanSquaredError.__module__ = "tensowrap.nn.losses"
+MeanAbsoluteError.__module__ = "tensorwrap.nn.losses"
 
 
 # Adding proper names:
-mse.__repr__ = "<function mse>"
-mae.__repr__ = "<function mae>"
+MeanSquaredError.__repr__ = "<function mse>"
+MeanAbsoluteError.__repr__ = "<function mae>"

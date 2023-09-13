@@ -27,6 +27,7 @@ class Lambda(Module):
 
 class Flatten(Lambda):
     def __init__(self, input_shape = None, name="Flatten") -> None:
+        super().__init__()
         if input_shape is None:
             self.input_shape = -1
         else:
@@ -34,6 +35,7 @@ class Flatten(Lambda):
 
     
     def call(self, params, inputs) -> Any:
+        # print(inputs.shape)
         return jnp.reshape(inputs, [inputs.shape[0], self.input_shape])
 
 # Inspection Fixes:

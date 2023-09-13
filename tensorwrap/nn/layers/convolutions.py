@@ -42,7 +42,7 @@ class ConvND(Layer):
                  filter_no, 
                  filter_shape,
                  strides, 
-                 padding="VALID",
+                 padding="valid",
                  kernel_initializer: Initializer = GlorotUniform(),
                  bias_initializer: Initializer = Zeros(),
                  groups = 1, 
@@ -107,7 +107,7 @@ class ConvND(Layer):
         self.dn = _convert_to_lax_conv_dimension_numbers(inputs.ndim - 2)
         self.column = (1,) * (len(in_shape) - 2)
 
-
+    
     def convolve(self, params, inputs):
         """Basic Convolution Operator."""
         return jax.lax.conv_general_dilated(
@@ -120,7 +120,7 @@ class ConvND(Layer):
             self.dn
         )
     
-    
+    @jax.jit
     def call(self, params, inputs):
         out = self.convolve(params, inputs)
         bias_shape = (1,) * (self.rank + 1) + (self.filter_no,)    
@@ -130,7 +130,7 @@ class ConvND(Layer):
 
 
 class Conv1D(ConvND):
-    def __init__(self, filter_no, filter_shape, strides, padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, name: str = "Conv"):
+    def __init__(self, filter_no, filter_shape, strides = (1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, name: str = "Conv"):
         super().__init__(rank=1, 
                          filter_no=filter_no, 
                          filter_shape=filter_shape, 
@@ -142,7 +142,7 @@ class Conv1D(ConvND):
                          name=name)
 
 class Conv2D(ConvND):
-    def __init__(self, filter_no, filter_shape, strides, padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, name: str = "Conv"):
+    def __init__(self, filter_no, filter_shape, strides = (1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, name: str = "Conv"):
         super().__init__(rank=2, 
                          filter_no=filter_no, 
                          filter_shape=filter_shape, 
