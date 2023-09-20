@@ -35,7 +35,6 @@ class Flatten(Lambda):
 
     
     def call(self, params, inputs) -> Any:
-        # print(inputs.shape)
         return jnp.reshape(inputs, [inputs.shape[0], self.input_shape])
 
 # Inspection Fixes:
