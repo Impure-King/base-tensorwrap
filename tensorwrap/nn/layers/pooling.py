@@ -15,8 +15,10 @@ class PoolND(Layer):
                  func,
                  padding: str = "valid",
                  name: str = "PoolND",
+                 training_mode=False,
                  start_value = -jnp.inf,) -> None:
-        super().__init__(name)
+        super().__init__(training_mode=training_mode,
+                         name=name)
         self.rank = rank
         self.window_shape = window_shape
         self.strides = strides

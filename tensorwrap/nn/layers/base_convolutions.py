@@ -45,7 +45,8 @@ class ConvND(Layer):
                  padding="valid",
                  kernel_initializer: Initializer = GlorotUniform(),
                  bias_initializer: Initializer = Zeros(),
-                 groups = 1, 
+                 groups = 1,
+                 training_mode = False, 
                  name: str = "Conv"):
         """Initializes a N-D Convolutional Layer that convolves the input.
         Arguments:
@@ -56,7 +57,9 @@ class ConvND(Layer):
             - name (Optional): Name of the layer.
         NOTE: Private Implementation of convolutions.
             """
-        super().__init__(name + str(rank) + "D")
+        super().__init__(
+            training_mode=False,
+            name=name + str(rank) + "D")
         self.rank = rank
         self.filter_no = filter_no
         self.filter_shape = filter_shape
@@ -130,7 +133,7 @@ class ConvND(Layer):
 
 
 class Conv1D(ConvND):
-    def __init__(self, filter_no, filter_shape, strides = (1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, name: str = "Conv"):
+    def __init__(self, filter_no, filter_shape, strides = (1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, training_mode=False, name: str = "Conv", *args, **kwargs):
         super().__init__(rank=1, 
                          filter_no=filter_no, 
                          filter_shape=filter_shape, 
@@ -138,11 +141,14 @@ class Conv1D(ConvND):
                          padding=padding, 
                          kernel_initializer=kernel_initializer, 
                          bias_initializer=bias_initializer, 
-                         groups=groups, 
-                         name=name)
+                         groups=groups,
+                         training_mode=training_mode, 
+                         name=name,
+                         *args,
+                         **kwargs)
 
 class Conv2D(ConvND):
-    def __init__(self, filter_no, filter_shape, strides = (1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, name: str = "Conv"):
+    def __init__(self, filter_no, filter_shape, strides = (1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, training_mode=False, name: str = "Conv", *args, **kwargs):
         super().__init__(rank=2, 
                          filter_no=filter_no, 
                          filter_shape=filter_shape, 
@@ -151,7 +157,10 @@ class Conv2D(ConvND):
                          kernel_initializer=kernel_initializer, 
                          bias_initializer=bias_initializer, 
                          groups=groups, 
-                         name=name)
+                         training_mode=training_mode,
+                         name=name,
+                         *args,
+                         **kwargs)
 
 
 # Depracated Convolutional Layer:

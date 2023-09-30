@@ -1,5 +1,6 @@
 from tensorwrap.nn.losses import Loss
 import jax
+import optax
 
 class SparseCategoricalCrossentropy(Loss):
     def __init__(self, from_logits = False) -> None:
@@ -13,5 +14,5 @@ class SparseCategoricalCrossentropy(Loss):
         if self.from_logits:
             logits = jax.nn.log_softmax(logits)
 
-        loss = -jax.numpy.sum(labels * logits, axis=1)
-        return loss.mean()
+        loss = optax.softmax_cross_entropy(logits=logits, labels=labels)
+        return jax.numpy.mean(loss)

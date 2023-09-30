@@ -6,8 +6,9 @@ from tensorwrap.nn.layers import Lambda
 
 
 class Dropout(Lambda):
-    def __init__(self, rate, shape = None, seed = None, name="Lambda") -> None:
-        super().__init__(name)
+    def __init__(self, rate, shape = None, seed = None, training_mode = False, name="Lambda") -> None:
+        super().__init__(training_mode=training_mode, 
+                         name=name)
         self.rate = rate
         self.input_shape = shape
         self.seed = random.randint(1, 5) if seed is None else seed
@@ -26,8 +27,9 @@ class Dropout(Lambda):
         )
 
     @jax.jit
-    def call(self, params, inputs, training):
-        if training and self.rate > 0:
+    def call(self, params, inputs):
+        if self.training_mode and self.rate > 0:
+            self.seed = random.randint(1, 36)
             return self.dropout(
                 inputs,
                 self.rate,

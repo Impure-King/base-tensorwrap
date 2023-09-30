@@ -20,8 +20,9 @@ class Layer(Module):
 
     _name_tracker: int = 1
 
-    def __init__(self, name: str = "Layer") -> None:
+    def __init__(self, training_mode = False, name: str = "Layer") -> None:
         self.built = False
+        self.training_mode = training_mode
         # Name Handling:
         self.name = name + ":" + str(Layer._name_tracker)
         self.id = Layer._name_tracker
@@ -61,6 +62,10 @@ class Layer(Module):
 
     def get_weights(self, name):
         return self.params[self.name][name]
+
+    def set_training_mode(self, training_mode):
+        self.training_mode = training_mode
+        print(f"Model Trainable Mode: {self.training_mode}")
 
     @final
     def __call__(self, params: dict, inputs: Array, *args, **kwargs):

@@ -32,11 +32,11 @@ class Model(Module):
     # Used for tracking Model names.
     _name_tracker = 0
 
-    def __init__(self, name:str = "Model") -> None:
+    def __init__(self, training_mode=False, name:str = "Model") -> None:
 
         # Trainable Variables are tracked across all subclasses.
         self.params = {}
-
+        self.training_mode = False
         # Name Tracking Handling:
         self.name = f"{name}:{Model._name_tracker}"
         Model._name_tracker += 1
@@ -64,7 +64,6 @@ class Model(Module):
 
         NOTE: Private Method for internal uses.
         """
-
         if isinstance(obj, tw.nn.layers.Layer):
             self.params[obj.name] = obj.params[obj.name]
         elif isinstance(obj, list):
@@ -80,6 +79,63 @@ class Model(Module):
                 if self.__check_attributes(attr_value):
                     return True
         return False
+    
+    def __set_training_mode_helper(self, obj, training_mode:bool):
+        if isinstance(obj, tw.nn.layers.Layer) or isinstance(obj, tw.nn.layers.Lambda):
+            obj.training_mode = training_mode
+        elif isinstance(obj, list):
+            for item in obj:
+                if self.__set_training_mode_helper(item, training_mode):
+                    return True
+        elif isinstance(obj, dict):
+            for value in obj.values():
+                if self.__set_training_mode_helper(value, training_mode):
+                    return True
+        elif hasattr(obj, '__dict__'):
+            for attr_name, attr_value in obj.__dict__.items():
+                if self.__set_training_mode_helper(attr_value, training_mode):
+                    return True
+        return False
+    
+    def set_training_mode(self, training_mode:bool=True):
+        """A recursive model training_mode_setter.
+        
+        The model searches for all the objects that subclass from ``tensorwrap.nn.layers.Lambda`` and 
+        ``tensorwrap.nn.layers.Layer`` and sets their mode to the requested argument.
+        
+        Arguments:
+            - training_mode (bool): The state of the training_mode.
+        """
+        self.__set_training_mode_helper(self, training_mode)
+
+    # def map_object(self, obj_type:Any, map_fun):
+    #     """A recursive obj_type function mapper.
+        
+    #     The model is searched for all objects of the selected type and passes it to map_fun.
+    #     Ensure the map fun returns the appropriate copy to replace the object.
+        
+    #     Arguments:
+    #         - obj_type (Any): Any object type that exists in the model."""
+        
+    #     def help_fun(obj, obj_type, map_fun):
+    #         if isinstance(obj, obj_type):
+    #             obj = map_fun(obj)
+    #             return obj
+    #         elif isinstance(obj, list):
+    #             for item in obj:
+    #                 if self.__check_attributes(item):
+    #                     return True
+    #         elif isinstance(obj, dict):
+    #             for value in obj.values():
+    #                 if self.__check_attributes(value):
+    #                     return True
+    #         elif hasattr(obj, '__dict__'):
+    #             for attr_name, attr_value in obj.__dict__.items():
+    #                 if self.__check_attributes(attr_value):
+    #                     return True
+    #         return False
+        
+    #     return help_fun(self, obj_type, map_fun)
 
     def init_params(self, inputs: jax.Array) -> Dict[str, Dict[str, jax.Array]]:
         """An method that initiates all the trainable_variables and sets up all the layer inputs.
@@ -101,7 +157,7 @@ class Model(Module):
         
         self._init = True
         self.__check_attributes(self)
-
+        self.set_training_mode(True)
         # Prevents any problems during setup.
         with jax.disable_jit():
             self.call(self.params, inputs)
@@ -279,8 +335,9 @@ class Model(Module):
 
 # Sequential models that create Forward-Feed Networks:
 class Sequential(Model):
-    def __init__(self, layers: list = [], name = "Sequential") -> None:
-        super().__init__(name=name)
+    def __init__(self, layers: list = [], training_mode=False, name = "Sequential") -> None:
+        super().__init__(training_mode=training_mode,
+                         name=name)
         self.layers = layers
 
 

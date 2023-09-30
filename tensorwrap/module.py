@@ -23,6 +23,7 @@ class Module(metaclass=ABCMeta):
     original TensorFlow implementation, so avoid any implementations of this class. Only made
     for internal use and public api placeholder."""
 
+    
     def __init__(self) -> None:
         """Helps instantiate the class and assign a self.trainable_variables to subclass."""
         self.params = {}

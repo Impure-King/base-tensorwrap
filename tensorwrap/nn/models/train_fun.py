@@ -55,8 +55,8 @@ class Train(Module):
         self.grad_fn = grad_fn
     
     def train(self, X_train, y_train, epochs = 1, batch_size = 32, validation_data = None, callbacks = [lambda x: x]):
-        X_train_batched = tw.experimental.data.Dataset(X_train).batch(batch_size)
-        y_train_batched = tw.experimental.data.Dataset(y_train).batch(batch_size)
+        X_train_batched = tw.experimental.data.Dataset(X_train).batch(batch_size).shuffle(1)
+        y_train_batched = tw.experimental.data.Dataset(y_train).batch(batch_size).shuffle(1)
         if validation_data is not None:
             X_valid, y_valid = validation_data
             compile_val_score = jax.jit(self.val_score)
@@ -93,7 +93,7 @@ class Train(Module):
     
     def update(self, params, state, X, y):
         losses, grads = self.grad_fn(params, X, y)
-        updates, state = self.optimizer.update(grads, state, params)
+        updates, state = self.optimizer.update(grads, state)
         params = optimizers.apply_updates(params, updates)
         return params, losses, state
     

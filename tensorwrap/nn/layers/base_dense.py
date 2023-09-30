@@ -29,8 +29,10 @@ class Dense(Layer):
                  use_bias: bool = True,
                  kernel_initializer: Initializer = GlorotUniform(),
                  bias_initializer: Initializer = Zeros(),
+                 training_mode = False,
                  name:str = "Dense"):
-        super().__init__(name)
+        super().__init__(training_mode=training_mode,
+                         name=name)
         self.units = units
         self.use_bias = use_bias
         self.kernel_initializer = kernel_initializer
@@ -66,9 +68,14 @@ class Linear(Layer):
                  use_bias: bool = True,
                  kernel_initializer: Initializer = GlorotUniform(),
                  bias_initializer: Initializer = Zeros(),
-                 name: str = "Layer") -> None:
-        super().__init__(name)
-        super().__init__()
+                 training_mode=False,
+                 name: str = "Layer",
+                 *args,
+                 **kwargs) -> None:
+        super().__init__(training_mode=training_mode,
+                         name=name,
+                         *args,
+                         **kwargs)
         self.in_shape = in_shape
         self.out_shape = out_shape
         self.use_bias = use_bias
