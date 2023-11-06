@@ -6,6 +6,7 @@ import jax.numpy as jnp
 from tensorwrap.nn.layers import Layer
 from tensorwrap.nn.initializers import Initializer
 from tensorwrap.nn.initializers import GlorotUniform, Zeros
+from tensorwrap.nn.activations import Activation
 
 __all__ = ["ConvND","Conv2D"]
 
@@ -45,8 +46,8 @@ class ConvND(Layer):
                  padding="valid",
                  kernel_initializer: Initializer = GlorotUniform(),
                  bias_initializer: Initializer = Zeros(),
-                 groups = 1,
-                 training_mode = False, 
+                 activation: str = 'relu',
+                 groups=1,
                  name: str = "Conv"):
         """Initializes a N-D Convolutional Layer that convolves the input.
         Arguments:
@@ -57,9 +58,7 @@ class ConvND(Layer):
             - name (Optional): Name of the layer.
         NOTE: Private Implementation of convolutions.
             """
-        super().__init__(
-            training_mode=False,
-            name=name + str(rank) + "D")
+        super().__init__(name=name + str(rank) + "D")
         self.rank = rank
         self.filter_no = filter_no
         self.filter_shape = filter_shape
@@ -67,6 +66,7 @@ class ConvND(Layer):
         self.padding = padding.upper()
         self.kernel_initializer = kernel_initializer
         self.bias_initializer = bias_initializer
+        self.activation = Activation.get_activation(activation)
         self.groups = 1
         self.check_parameters()
     
@@ -103,7 +103,7 @@ class ConvND(Layer):
         self.kernel = self.add_weights(shape=kernel_shape,
                                        initializer=self.kernel_initializer,
                                        name="kernel")
-        self.bias = self.add_weights(shape=[self.filter_no],
+        self.bias = self.add_weights(shape=(self.filter_no,),
                                      initializer=self.bias_initializer,
                                      name="bias")
         
@@ -127,37 +127,37 @@ class ConvND(Layer):
     def call(self, params, inputs):
         out = self.convolve(params, inputs)
         bias_shape = (1,) * (self.rank + 1) + (self.filter_no,)    
-        return out + params["bias"].reshape(bias_shape)
+        return self.activation(out + params["bias"].reshape(bias_shape))
 
 # Some Daily Conv Uses:
 
 
 class Conv1D(ConvND):
-    def __init__(self, filter_no, filter_shape, strides = (1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, training_mode=False, name: str = "Conv", *args, **kwargs):
+    def __init__(self, filter_no, filter_shape, strides=(1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), activation="relu", groups=1, name: str = "Conv", *args, **kwargs):
         super().__init__(rank=1, 
                          filter_no=filter_no, 
                          filter_shape=filter_shape, 
                          strides=strides, 
                          padding=padding, 
                          kernel_initializer=kernel_initializer, 
-                         bias_initializer=bias_initializer, 
+                         bias_initializer=bias_initializer,
+                         activation=activation,
                          groups=groups,
-                         training_mode=training_mode, 
                          name=name,
                          *args,
                          **kwargs)
 
 class Conv2D(ConvND):
-    def __init__(self, filter_no, filter_shape, strides = (1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), groups=1, training_mode=False, name: str = "Conv", *args, **kwargs):
+    def __init__(self, filter_no, filter_shape, strides=(1, 1), padding="VALID", kernel_initializer: Initializer = GlorotUniform(), bias_initializer: Initializer = Zeros(), activation="relu", groups=1, name: str = "Conv", *args, **kwargs):
         super().__init__(rank=2, 
                          filter_no=filter_no, 
                          filter_shape=filter_shape, 
                          strides=strides, 
                          padding=padding, 
                          kernel_initializer=kernel_initializer, 
-                         bias_initializer=bias_initializer, 
-                         groups=groups, 
-                         training_mode=training_mode,
+                         bias_initializer=bias_initializer,
+                         activation=activation,
+                         groups=groups,
                          name=name,
                          *args,
                          **kwargs)

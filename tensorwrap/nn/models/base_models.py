@@ -29,84 +29,65 @@ class Model(Module):
     NOTE: Recommended only for subclassing use.
     """
 
-    # Used for tracking Model names.
-    _name_tracker = 0
+    def __init__(self, name: str = "Model") -> None:
 
-    def __init__(self, training_mode=False, name:str = "Model") -> None:
-
-        # Trainable Variables are tracked across all subclasses.
-        self.params = {}
-        self.training_mode = False
-        # Name Tracking Handling:
-        self.name = f"{name}:{Model._name_tracker}"
-        Model._name_tracker += 1
-
-        # Private attributes that track the state of each method:
-        self._init = False
+        # loading Module configurations:
+        super().__init__(name=name)
         self._compiled = False
-
-    def __init_subclass__(cls) -> None:
-        """Registers all subclasses as Pytrees and changes ``call`` conventions.
-        Requires no arguments.
-
-        NOTE: Private Method for internal uses.
-        """
-        super().__init_subclass__()
-        cls.__call__ = cls.call
     
-    def __check_attributes(self, obj: Any):
-        """A recursive trainable_variable gatherer.
-
-        Checks each attribute of the object to gather all trainable variables.
-
-        Arguments:
-            - obj (Any): The object whose attributes are to be checked.
-
-        NOTE: Private Method for internal uses.
-        """
-        if isinstance(obj, tw.nn.layers.Layer):
-            self.params[obj.name] = obj.params[obj.name]
-        elif isinstance(obj, list):
-            for item in obj:
-                if self.__check_attributes(item):
-                    return True
-        elif isinstance(obj, dict):
-            for value in obj.values():
-                if self.__check_attributes(value):
-                    return True
-        elif hasattr(obj, '__dict__'):
-            for attr_name, attr_value in obj.__dict__.items():
-                if self.__check_attributes(attr_value):
-                    return True
-        return False
+    # def __check_attributes(self, obj: Any):
+    #     """A recursive trainable_variable gatherer.
+    #
+    #     Checks each attribute of the object to gather all trainable variables.
+    #
+    #     Arguments:
+    #         - obj (Any): The object whose attributes are to be checked.
+    #
+    #     NOTE: Private Method for internal uses.
+    #     """
+    #     if isinstance(obj, tw.nn.layers.Layer):
+    #         self.params[obj.name] = obj.params[obj.name]
+    #     elif isinstance(obj, list):
+    #         for item in obj:
+    #             if self.__check_attributes(item):
+    #                 return True
+    #     elif isinstance(obj, dict):
+    #         for value in obj.values():
+    #             if self.__check_attributes(value):
+    #                 return True
+    #     elif hasattr(obj, '__dict__'):
+    #         for attr_name, attr_value in obj.__dict__.items():
+    #             if self.__check_attributes(attr_value):
+    #                 return True
+    #     return False
     
-    def __set_training_mode_helper(self, obj, training_mode:bool):
-        if isinstance(obj, tw.nn.layers.Layer) or isinstance(obj, tw.nn.layers.Lambda):
-            obj.training_mode = training_mode
-        elif isinstance(obj, list):
-            for item in obj:
-                if self.__set_training_mode_helper(item, training_mode):
-                    return True
-        elif isinstance(obj, dict):
-            for value in obj.values():
-                if self.__set_training_mode_helper(value, training_mode):
-                    return True
-        elif hasattr(obj, '__dict__'):
-            for attr_name, attr_value in obj.__dict__.items():
-                if self.__set_training_mode_helper(attr_value, training_mode):
-                    return True
-        return False
+    # def __set_training_mode_helper(self, obj, training_mode:bool):
+    #     if isinstance(obj, tw.nn.layers.Layer) or isinstance(obj, tw.nn.layers.Lambda):
+    #         obj.training_mode = training_mode
+    #     elif isinstance(obj, list):
+    #         for item in obj:
+    #             if self.__set_training_mode_helper(item, training_mode):
+    #                 return True
+    #     elif isinstance(obj, dict):
+    #         for value in obj.values():
+    #             if self.__set_training_mode_helper(value, training_mode):
+    #                 return True
+    #     elif hasattr(obj, '__dict__'):
+    #         for attr_name, attr_value in obj.__dict__.items():
+    #             if self.__set_training_mode_helper(attr_value, training_mode):
+    #                 return True
+    #     return False
     
-    def set_training_mode(self, training_mode:bool=True):
-        """A recursive model training_mode_setter.
-        
-        The model searches for all the objects that subclass from ``tensorwrap.nn.layers.Lambda`` and 
-        ``tensorwrap.nn.layers.Layer`` and sets their mode to the requested argument.
-        
-        Arguments:
-            - training_mode (bool): The state of the training_mode.
-        """
-        self.__set_training_mode_helper(self, training_mode)
+    # def set_training_mode(self, training_mode:bool=True):
+    #     """A recursive model training_mode_setter.
+    #
+    #     The model searches for all the objects that subclass from ``tensorwrap.nn.layers.Lambda`` and
+    #     ``tensorwrap.nn.layers.Layer`` and sets their mode to the requested argument.
+    #
+    #     Arguments:
+    #         - training_mode (bool): The state of the training_mode.
+    #     """
+    #     self.__set_training_mode_helper(self, training_mode)
 
     # def map_object(self, obj_type:Any, map_fun):
     #     """A recursive obj_type function mapper.
@@ -137,33 +118,33 @@ class Model(Module):
         
     #     return help_fun(self, obj_type, map_fun)
 
-    def init_params(self, inputs: jax.Array) -> Dict[str, Dict[str, jax.Array]]:
-        """An method that initiates all the trainable_variables and sets up all the layer inputs.
-        
-        Arguments:
-            - inputs (jax.Array): Jax arrays that are used to determine the input shape and parameters.
-        
-        Returns:
-            - Dict[str, ...]: A dictionary with names and trainable_variables of each trainable_layer.
-
-        Example::
-            >>> model = SubclassedModel() # a subclassed ``Model`` instance
-            >>> array = tensorwrap.tensor([...]) # An array with same input shape as the inputs.
-            >>> params = model.init_params(array) # Initializes the parameters and input shapes
-            >>> # Asserting the equivalence of the returned value and parameters.
-            >>> print(params == model.trainable_variables)
-            True
-        """
-        
-        self._init = True
-        self.__check_attributes(self)
-        self.set_training_mode(True)
-        # Prevents any problems during setup.
-        with jax.disable_jit():
-            self.call(self.params, inputs)
-        
-        self.__check_attributes(self)
-        return self.params
+    # def init_params(self, inputs: jax.Array) -> Dict[str, Dict[str, jax.Array]]:
+    #     """An method that initiates all the trainable_variables and sets up all the layer inputs.
+    #
+    #     Arguments:
+    #         - inputs (jax.Array): Jax arrays that are used to determine the input shape and parameters.
+    #
+    #     Returns:
+    #         - Dict[str, ...]: A dictionary with names and trainable_variables of each trainable_layer.
+    #
+    #     Example::
+    #         >>> model = SubclassedModel() # a subclassed ``Model`` instance
+    #         >>> array = tensorwrap.tensor([...]) # An array with same input shape as the inputs.
+    #         >>> params = model.init_params(array) # Initializes the parameters and input shapes
+    #         >>> # Asserting the equivalence of the returned value and parameters.
+    #         >>> print(params == model.trainable_variables)
+    #         True
+    #     """
+    #
+    #     self._init = True
+    #     self.__check_attributes(self)
+    #     self.set_training_mode(True)
+    #     # Prevents any problems during setup.
+    #     with jax.disable_jit():
+    #         self.call(self.params, inputs)
+    #
+    #     self.__check_attributes(self)
+    #     return self.params
     
 
     def predict(self, inputs: jax.Array) -> jax.Array:
@@ -179,7 +160,6 @@ class Model(Module):
         metric = metric_fn(y, pred)
         loss = loss_fn(y, pred)
         self.__show_loading_animation(1, 1, loss, metric)
-
 
     def call(self, params = None, *args, **kwargs) -> Any:
         if not self._init:
@@ -329,15 +309,11 @@ class Model(Module):
     #         val_met_str = f"    -    val_loss: {val_metric:.5f}"
     #     print(f'\r{current_batch}/{total_batches} [{bar}]    -    loss: {loss:.5f}    -    metric: {metric:.5f}' + val_loss_str + val_met_str, end='', flush=True)
 
-    def __repr__(self) -> str:
-        return f"<tf.{self.name}>"
-
 
 # Sequential models that create Forward-Feed Networks:
 class Sequential(Model):
-    def __init__(self, layers: list = [], training_mode=False, name = "Sequential") -> None:
-        super().__init__(training_mode=training_mode,
-                         name=name)
+    def __init__(self, layers: list = list(), name="Sequential") -> None:
+        super().__init__(name=name)
         self.layers = layers
 
 

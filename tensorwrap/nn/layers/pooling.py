@@ -9,16 +9,14 @@ from tensorwrap.nn.layers import Layer
 
 class PoolND(Layer):
     def __init__(self,
-                 rank:int,
+                 rank: int,
                  window_shape,
                  strides,
                  func,
                  padding: str = "valid",
                  name: str = "PoolND",
-                 training_mode=False,
-                 start_value = -jnp.inf,) -> None:
-        super().__init__(training_mode=training_mode,
-                         name=name)
+                 start_value=-jnp.inf,) -> None:
+        super().__init__(name=name)
         self.rank = rank
         self.window_shape = window_shape
         self.strides = strides
@@ -36,7 +34,7 @@ class PoolND(Layer):
         
         if len(self.window_shape) != self.rank:
             raise ValueError(f"Window dimensions isn't equal to {self.rank}."
-                             f"Window dimensions should be (lenght, width, height, ...). \n Current shape: {in_shape}")
+                             f"Window dimensions should be (length, width, height, ...). \n Current shape: {in_shape}")
         self.window_shape = (1,) + self.window_shape + (1,)
         self.strides = (1,) + self.strides + (1,)
 

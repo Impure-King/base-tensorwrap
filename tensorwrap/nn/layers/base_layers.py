@@ -20,15 +20,8 @@ class Layer(Module):
 
     _name_tracker: int = 1
 
-    def __init__(self, training_mode = False, name: str = "Layer") -> None:
-        self.built = False
-        self.training_mode = training_mode
-        # Name Handling:
-        self.name = name + ":" + str(Layer._name_tracker)
-        self.id = Layer._name_tracker
-        Layer._name_tracker += 1
-
-        self.params = {self.name:{}}
+    def __init__(self, name: str = "Layer") -> None:
+        super().__init__(name=name)
 
     def add_weights(self, shape: Tuple[int, ...], key = PRNGKey(randint(1, 1000)), initializer:Initializer = GlorotNormal(), name = 'unnamed weight', trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
@@ -48,41 +41,26 @@ class Layer(Module):
 
         return weight
 
-    def build(self, inputs):
-        pass
-
-    def init_params(self, inputs):
-        self.build(inputs)
-        self.built=True
-        return self.params
-
     # Future idea to automize layer building.
     # def compute_output_shape(self):
     #     raise NotImplementedError("Method `compute_output_shape` has not been implemented.")
 
     def get_weights(self, name):
-        return self.params[self.name][name]
+        return self._params[name]
 
-    def set_training_mode(self, training_mode):
-        self.training_mode = training_mode
-        print(f"Model Trainable Mode: {self.training_mode}")
-
-    @final
-    def __call__(self, params: dict, inputs: Array, *args, **kwargs):
-        if not self.built:
-            self.init_params(inputs)
-            params = self.params # To be accepted in the format.
-        out = self.call(params[self.name], inputs, *args, **kwargs)
-        return out
+    # @final
+    # def __call__(self, params: dict, inputs: Array, *args, **kwargs):
+    #     if not self.built:
+    #         self.init_params(inputs)
+    #         params = self.get_trainable_params() # To be accepted in the format.
+    #     out = self.call(params[self.name], inputs, *args, **kwargs)
+    #     return out
     
     def call(self, params, inputs):
         if NotImplemented:
             raise NotImplementedError("Call Method Missing:\nPlease define the control flow in the call method.")
 
 
-    # Displaying the names:
-    def __repr__(self) -> str:
-        return f"<tf.{self.name}>"
 
 
     

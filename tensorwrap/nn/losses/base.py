@@ -12,6 +12,6 @@ class Loss(Module):
         super().__init_subclass__()
         cls.__call__ = cls.call
 
-    def call(self, *args, **kwargs):
+    def __call__(self, y_true, y_pred, *args, **kwargs):
         raise NotImplementedError("``self.call`` is not defined.")
     

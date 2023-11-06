@@ -5,8 +5,8 @@ from tensorwrap.module import Module
 
 __all__ = ["Activation", "ReLU"]
 
-# Base Activation Class:
 
+# Base Activation Class:
 class Activation(Module):
     """A superclass for defining custom activation functions.
     
@@ -19,25 +19,26 @@ class Activation(Module):
     # Tracks Name with some id
     __layer_tracker = 0
     
-    def __init__(self, name:str = "Activation"):
+    def __init__(self, name: str = "Activation"):
         """
         Arguments:
             name (string, Optional): The name of the activation function. Defaults to "Activation".
         
         NOTE: Include ``super().__init__()``
         """
-        # Creating a name for the layer.
-        self.name = name + ':' + str(Activation.__layer_tracker)
-        Activation.__layer_tracker += 1
-    
-    def __init_subclass__(cls) -> None:
-        super().__init_subclass__()
-        # overriding __call__ function for conventions:
-        cls.__call__ = cls.call
+        super().__init__(name=name)
+
+    @classmethod
+    def get_activation(self, name: str):
+        self.__activations = {
+            'none': lambda x: x,
+            'relu': lambda x: tf.maximum(x, 0)
+        }
+        return self.__activations[str(name).lower()]
 
     def call(self, params, inputs):
         """
-        This method should be overriden by subclasses to define the control flow
+        This method should be overridden by subclasses to define the control flow
         of the activation function.
 
         Arguments:
@@ -68,9 +69,9 @@ class ReLU(Activation):
 
     def __init__(self, 
                  max_value=None,
-                 negative_slope = 0,
-                 threshold = 0,
-                 name = "ReLU"):
+                 negative_slope=0,
+                 threshold=0,
+                 name="ReLU"):
         """
         Arguments:
             max_value (int, optional): [description]. Defaults to None.
@@ -81,13 +82,12 @@ class ReLU(Activation):
         Raises:
             ValueError: [description]
         """
-        super().__init__(name = name)
+        super().__init__(name=name)
         self.max_value = max_value
         self.slope = negative_slope
         self.threshold = threshold
         if self.max_value is not None and self.max_value < 0:
             raise ValueError("Max_value cannot be negative.")
-    
 
     def call(self, params, inputs):
         part1 = tf.maximum(0, inputs - self.threshold)
