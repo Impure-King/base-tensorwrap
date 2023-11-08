@@ -2,7 +2,7 @@
 from abc import ABCMeta
 from collections import OrderedDict, defaultdict
 from collections.abc import Iterable
-from typing import final, Optional
+from typing import final, Optional, Any
 
 import jax
 import jax.numpy as jnp
@@ -72,7 +72,6 @@ class _Module(metaclass=ABCMeta):
         vars(instance).update(aux_data)
         return instance
 
-
 class Module(_Module):
     """A base class for all JAX compatible neural network classes to subclass from.
     Allows for all subclasses to become a Pytree and
@@ -93,6 +92,7 @@ class Module(_Module):
 
         # Defining parameter handling:
         self.params = {self.name: {}}
+        self.child_blocks = []
 
         # Implicit Variables:
         self._built = False
@@ -103,41 +103,38 @@ class Module(_Module):
             raise TypeError("``name`` parameter is not type 'str'.\n"
                             f"Current argument: {name}")
     
-    def _recursive_iteration(self, obj):
-        for value in obj:
-            if not isinstance(value, Module) and not isinstance(value, (str, jnp.ndarray)):
-                return self._recursive_iteration(value)
-            elif isinstance(value, dict):
-                return self._recursive_iteration(value.values())
-            elif isinstance(value, Module):
-                value._init_params()
-                self.params[self.name][value.name] = value.params[value.name]
-    
-    def _init_params(self):
-        """A helper function that recursively registers all child nodes and parameters,
-        by parsing the attributes of the class."""
-        # Start parsing the items of the class:
-        for attribute_name, attribute_value in vars(self).items():
-            if isinstance(attribute_value, Module) and hasattr(attribute_value, "params"):
-                print(f"{self.name} \t\t\t {attribute_value}")
-                self.params[self.name][attribute_value.name] = attribute_value.params[attribute_value.name]
-                if not attribute_value._init:
-                    attribute_value._init_params()
-                self.params[self.name][attribute_value.name] = attribute_value.params[attribute_value.name]
-            
-            elif isinstance(attribute_value, dict):
-                self._recursive_iteration(attribute_value.values())
 
-            elif isinstance(attribute_value, Iterable) and not isinstance(attribute_value, (jnp.ndarray, str)):
-                self._recursive_iteration(attribute_value)
-        
+    def add_block_params(self, obj: object, strict:bool = True):
+        """Queues the addition of a ``Module`` subclass's variables to the class's variables. 
+        The addition occurs at the model initialization.
+        Argument:
+            - obj (Module): The ``Module`` subclass, whose variables are to be collected.
+            - strict (boolean): Determines whether to thrown an error, when incorrect type is provided."""
+        if isinstance(obj, Module) and hasattr(obj, "name"):
+            self.child_blocks.append(obj)
+
+        elif strict:
+            if not isinstance(obj, Module):
+                raise ValueError(f"""Raised from {self.name}.
+                                Object {obj} is not a ``Module`` subclass.
+                                Object type: {type(obj)}""")
+
+            elif not hasattr(obj, "name"):
+                raise AttributeError(f"""Raised from {self.name}.
+                                    ``Module`` subclass {obj} does not have attribute name.""")
+        else:
+            pass
+
+    def _add_block_params(self):
+        for block in self.child_blocks:
+            self.params[self.name][block.name] = block.params[block.name]        
 
     def init(self, array):
         self._init = True
-        self._init_params()
+        self._add_block_params()
         with jax.disable_jit():
             self.__call__(self.params, array)
-        self._init_params()
+        self._add_block_params()
         return self.params
     
     def build(self, *args):
@@ -148,7 +145,6 @@ class Module(_Module):
     def __call__(self, params, inputs, *args, **kwargs):
         if not self._built:
             self.build(inputs)
-            self._init_params()
             params = self.params
         if not self._init:
             self.init(inputs)
@@ -177,8 +173,115 @@ class Module(_Module):
 
     @final
     def __repr__(self):
-        self.format_table(jax.tree_map(lambda x: x.shape, self.params))
-        return ""
+        table = self.format_table(jax.tree_map(lambda x: x.shape, self.params))
+        return table
+
+
+# class Module(_Module):
+#     """A base class for all JAX compatible neural network classes to subclass from.
+#     Allows for all subclasses to become a Pytree and
+#     assigns special functions to implicitly track trainable parameters from other subclassed objects.
+
+#     Parameters:
+#         - name (str): A string consisting for the internal name for state management. Defaults to "Module". """
+    
+#     _name_tracker = defaultdict(int) # Automatically initializes the indices to 0.
+
+#     def __init__(self, name: str = "Module"):
+#         super().__init__()
+
+#         # Implicit Name tracking upon model creation. Replacing Tracker with name tracker with default dict eventually.
+#         self.name = f"{name}:{str(Module._name_tracker[name])}"
+#         Module._name_tracker[name] += 1
+      
+
+#         # Defining parameter handling:
+#         self.params = {self.name: {}}
+
+#         # Implicit Variables:
+#         self._built = False
+#         self._init = False
+
+#         # Parameter Error Handling:
+#         if not isinstance(name, str):
+#             raise TypeError("``name`` parameter is not type 'str'.\n"
+#                             f"Current argument: {name}")
+    
+#     def _recursive_iteration(self, obj):
+#         for value in obj:
+#             if not isinstance(value, Module) and not isinstance(value, (str, jnp.ndarray)):
+#                 return self._recursive_iteration(value)
+#             elif isinstance(value, dict):
+#                 return self._recursive_iteration(value.values())
+#             elif isinstance(value, Module):
+#                 value._init_params()
+#                 self.params[self.name][value.name] = value.params[value.name]
+    
+#     def _init_params(self):
+#         """A helper function that recursively registers all child nodes and parameters,
+#         by parsing the attributes of the class."""
+#         # Start parsing the items of the class:
+#         for attribute_value in vars(self).values():
+#             if isinstance(attribute_value, Module) and hasattr(attribute_value, "params"):
+#                 self.params[self.name][attribute_value.name] = attribute_value.params[attribute_value.name]
+#                 if not attribute_value._init:
+#                     attribute_value._init_params()
+#                 self.params[self.name][attribute_value.name] = attribute_value.params[attribute_value.name]
+            
+#             elif isinstance(attribute_value, dict):
+#                 self._recursive_iteration(attribute_value.values())
+
+#             elif isinstance(attribute_value, Iterable) and not isinstance(attribute_value, (jnp.ndarray, str)):
+#                 self._recursive_iteration(attribute_value)
+        
+
+#     def init(self, array):
+#         self._init = True
+#         self._init_params()
+#         with jax.disable_jit():
+#             self.__call__(self.params, array)
+#         self._init_params()
+#         return self.params
+    
+#     def build(self, *args):
+#         """A build method that is called during initialization."""
+#         self._built = True
+
+
+#     def __call__(self, params, inputs, *args, **kwargs):
+#         if not self._built:
+#             self.build(inputs)
+#             self._init_params()
+#             params = self.params
+#         if not self._init:
+#             self.init(inputs)
+#             params = self.params
+#         out = self.call(params[self.name], inputs, *args, **kwargs)
+#         return out
+
+#     def format_table(self, d, depth=0):
+#         dicts = defaultdict(int)
+#         lens = []
+#         if not d:
+#             return ""
+        
+#         table = "─"*100 + '\n'
+#         for key, value in d.items():
+#             indent = "   " * depth
+#             if isinstance(value, dict):
+#                 dicts[depth] += 1
+#                 start = f"|{indent}{dicts[depth]}.{key}\n"
+#                 table += start + '─' * 100 + '\n'
+#                 table += self.format_table(value, depth + 1)
+#             else:
+#                 table += f"|{indent}{key}: {value}\n"
+        
+#         return table
+
+#     @final
+#     def __repr__(self):
+#         table = self.format_table(jax.tree_map(lambda x: x.shape, self.params))
+#         return table
 
 
 

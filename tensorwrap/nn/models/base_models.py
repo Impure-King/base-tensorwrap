@@ -315,10 +315,12 @@ class Sequential(Model):
     def __init__(self, layers: list = list(), name="Sequential") -> None:
         super().__init__(name=name)
         self.layers = layers
+        
 
 
     def add(self, layer: Layer) -> None:
         self.layers.append(layer)
+        self.add_block_params(layer)
 
     def call(self, params: dict, x: Array) -> Array:
         super().call()
