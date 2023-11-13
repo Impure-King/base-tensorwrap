@@ -25,16 +25,21 @@ class PoolND(Layer):
         self.start_value = start_value
     
     def build(self, inputs):
+        super().build()
         in_shape = jnp.shape(inputs)
         if len(in_shape) != self.rank + 2:
             raise ValueError(f"Data dimension doesn't equal to {self.rank + 2}.\n"
                              f"Data dimensions should be (batch_size, ..., depth).\n Current Shape: {in_shape}")
-        if not jnp.array(jnp.array(in_shape) > 0).any():
-            raise ValueError(f"Data shape isn't positive. Please reshape to have positive data shapes.")
         
         if len(self.window_shape) != self.rank:
-            raise ValueError(f"Window dimensions isn't equal to {self.rank}."
-                             f"Window dimensions should be (length, width, height, ...). \n Current shape: {in_shape}")
+            raise ValueError(f"Window dimensions isn't equal to {self.rank}. "
+                             f"Window dimensions should be (length, width, height, ...). \n Current shape: {self.window_shape}")
+        
+        if not jnp.all(jnp.array(in_shape) > 0):
+            raise ValueError(f"""Raised from {self.name}.
+                             Argument ``inputs`` does not have a positive shape.
+                             Current shape {in_shape}.""")
+        
         self.window_shape = (1,) + self.window_shape + (1,)
         self.strides = (1,) + self.strides + (1,)
 

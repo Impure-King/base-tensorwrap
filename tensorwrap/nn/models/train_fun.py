@@ -39,7 +39,7 @@ class Train(Module):
     def __init__(self, model, loss_fn, optimizer, metric_fn, copy_model = True) -> None:
         super().__init__()
         self.loss_fn = loss_fn
-        self.metric_fn = jax.jit(metric_fn)
+        self.metric_fn = metric_fn
         if copy_model:
             self.model = copy.deepcopy(model)
         else:
@@ -66,6 +66,7 @@ class Train(Module):
         compiled_update = jax.jit(self.update)
         for epoch in range(1, epochs+1):
             print(f"Epoch {epoch}/{epochs}")
+            self.metric_fn.reset()
             for index, (X, y) in enumerate(zip(X_train_batched, y_train_batched)): 
                 self.model.params, losses, self.state = compiled_update(self.model.params, self.state, X, y)
                 metrics = self.metric_fn(y, self.model(self.model.params, X))

@@ -8,7 +8,7 @@ class MeanSquaredError(Loss):
         super().__init__()
         pass
 
-    def call(self, y_pred, y_true):
+    def call(self, y_true, y_pred):
         return jnp.mean((y_true - y_pred)**2)
 
 class MeanAbsoluteError(Loss):
@@ -16,7 +16,7 @@ class MeanAbsoluteError(Loss):
         super().__init__()
         pass
 
-    def call(self, y_pred, y_true):
+    def call(self, y_true, y_pred):
         return jnp.mean(jnp.abs(y_true - y_pred))
 
 # Inspection Fixes:

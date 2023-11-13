@@ -1,6 +1,6 @@
 # Stable Modules
 from abc import ABCMeta
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from collections.abc import Iterable
 from typing import final, Optional, Any
 
@@ -72,17 +72,19 @@ class _Module(metaclass=ABCMeta):
         vars(instance).update(aux_data)
         return instance
 
+
 class Module(_Module):
     """A base class for all JAX compatible neural network classes to subclass from.
     Allows for all subclasses to become a Pytree and
     assigns special functions to implicitly track trainable parameters from other subclassed objects.
-
-    Parameters:
-        - name (str): A string consisting for the internal name for state management. Defaults to "Module". """
+    ---------
+    Arguments:
+        - name (Optional, str): A string consisting for the internal name for state management. Defaults to ``"Module"``. 
+    """
     
     _name_tracker = defaultdict(int) # Automatically initializes the indices to 0.
 
-    def __init__(self, name: str = "Module"):
+    def __init__(self, name: Optional[str] = "Module"):
         super().__init__()
 
         # Implicit Name tracking upon model creation. Replacing Tracker with name tracker with default dict eventually.
@@ -100,22 +102,24 @@ class Module(_Module):
 
         # Parameter Error Handling:
         if not isinstance(name, str):
-            raise TypeError("``name`` parameter is not type 'str'.\n"
+            raise TypeError(f"Raised from {self.name}.\n"
+                            "``name`` parameter is not type 'str'.\n"
                             f"Current argument: {name}")
     
-
-    def add_block_params(self, obj: object, strict:bool = True):
+    def add_module_params(self, obj : object, strict : Optional[bool] = True):
         """Queues the addition of a ``Module`` subclass's variables to the class's variables. 
         The addition occurs at the model initialization.
-        Argument:
+        ---------
+        Arguments:
             - obj (Module): The ``Module`` subclass, whose variables are to be collected.
-            - strict (boolean): Determines whether to thrown an error, when incorrect type is provided."""
+            - strict (Optional, boolean): Determines whether to thrown an error, when incorrect type is provided. Defaults to ``True``.
+        """
         if isinstance(obj, Module) and hasattr(obj, "name"):
             self.child_blocks.append(obj)
 
         elif strict:
             if not isinstance(obj, Module):
-                raise ValueError(f"""Raised from {self.name}.
+                raise TypeError(f"""Raised from {self.name}.
                                 Object {obj} is not a ``Module`` subclass.
                                 Object type: {type(obj)}""")
 
@@ -125,24 +129,37 @@ class Module(_Module):
         else:
             pass
 
-    def _add_block_params(self):
+    def _add_module_params(self):
+        """A hidden helper method that parses through all the registered ``Module`` subclasses and adds their parameter to the current instance."""
         for block in self.child_blocks:
             self.params[self.name][block.name] = block.params[block.name]        
 
-    def init(self, array):
+    def init(self, inputs: Any):
+        """The initializing method that gathers and defines the model parameters.
+        It requires all the hidden modules to be registered by the ``add_module_params`` method, for proper initialization.
+        ---------
+        Arguments:
+            - inputs (Any): The inputs that the model will evaluate to initialize the parameters.
+        """
         self._init = True
-        self._add_block_params()
+        self._add_module_params()
         with jax.disable_jit():
-            self.__call__(self.params, array)
-        self._add_block_params()
+            self.__call__(self.params, inputs)
+        self._add_module_params()
         return self.params
-    
+
     def build(self, *args):
         """A build method that is called during initialization."""
         self._built = True
 
 
-    def __call__(self, params, inputs, *args, **kwargs):
+    def __call__(self, params: dict, inputs: Any, *args, **kwargs):
+        """The main call attribute of all the Modules.
+        ---------
+        Arguments:
+            - params (dict): A dictionary containing the ``Modules`` parameters.
+            - inputs (Any): The inputs that are required for the output predictions.
+        """
         if not self._built:
             self.build(inputs)
             params = self.params
@@ -177,7 +194,7 @@ class Module(_Module):
         return table
 
 
-# class Module(_Module):
+# class Module1(_Module):
 #     """A base class for all JAX compatible neural network classes to subclass from.
 #     Allows for all subclasses to become a Pytree and
 #     assigns special functions to implicitly track trainable parameters from other subclassed objects.
