@@ -38,12 +38,15 @@ class History(Module):
 class Train(Module):
     def __init__(self, model, loss_fn, optimizer, metric_fn, copy_model = True) -> None:
         super().__init__()
+        # Getting the necessary values:
         self.loss_fn = loss_fn
         self.metric_fn = metric_fn
+        
         if copy_model:
             self.model = copy.deepcopy(model)
         else:
             self.model = model
+            
         self.optimizer = optimizer
         self.state = self.optimizer.init(self.model.params)
         self.history = History()

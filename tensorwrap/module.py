@@ -152,7 +152,7 @@ class Module(_Module):
         """A build method that is called during initialization."""
         self._built = True
 
-
+    
     def __call__(self, params: dict, inputs: Any, *args, **kwargs):
         """The main call attribute of all the Modules.
         ---------

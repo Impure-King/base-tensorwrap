@@ -11,6 +11,7 @@ class Metric(Module):
     def reset(self):
         self.state = []
 
+    @jax.jit
     def __call__(self, y_true, y_pred, *args, **kwargs):
         x = self.call(y_true, y_pred, *args, **kwargs)
         self.state.append(x)

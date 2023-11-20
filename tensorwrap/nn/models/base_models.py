@@ -51,6 +51,12 @@ class Model(Module):
         metric = metric_fn(labels, pred)
         loss = loss_fn(labels, pred)
         self.__show_loading_animation(1, 1, loss, metric)
+    
+    def to(self, device_name: str):
+        """Shifts the parameters and operations of the model to the suggested devices.
+        Arguments:
+            - device_name (str): A string that specifies device name."""
+        jax.tree_map(lambda x: tw.config.device_put(x, device_name), self.params)
 
     def __show_loading_animation(self, total_batches, current_batch, loss, metric):
         """Helper function that shows the loading animation, when training the model.

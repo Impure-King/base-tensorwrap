@@ -71,7 +71,7 @@ class Dense(Layer):
             self.bias = self.add_weights(shape=(self.units,),
                                          initializer=self.bias_initializer,
                                          name="bias")
-
+            
     def call(self, params: dict, inputs: jax.Array) -> jax.Array:
         if not self.use_bias:
             x = inputs @ params['kernel']

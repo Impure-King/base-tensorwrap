@@ -124,7 +124,6 @@ class ConvND(Layer):
             self.dn
         )
     
-
     def call(self, params, inputs):
         out = self.convolve(params, inputs)
         bias_shape = (1,) * (self.rank + 1) + (self.filter_no,)    

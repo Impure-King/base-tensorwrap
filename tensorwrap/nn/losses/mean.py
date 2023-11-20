@@ -1,5 +1,6 @@
 from tensorwrap.nn.losses import Loss
 from jax import numpy as jnp
+from jax import jit
 
 __all__ = ["mse", "mae"]
 
@@ -8,6 +9,7 @@ class MeanSquaredError(Loss):
         super().__init__()
         pass
 
+    @jit
     def call(self, y_true, y_pred):
         return jnp.mean((y_true - y_pred)**2)
 
@@ -16,6 +18,7 @@ class MeanAbsoluteError(Loss):
         super().__init__()
         pass
 
+    @jit
     def call(self, y_true, y_pred):
         return jnp.mean(jnp.abs(y_true - y_pred))
 

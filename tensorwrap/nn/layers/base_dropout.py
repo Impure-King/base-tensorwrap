@@ -26,7 +26,7 @@ class Dropout(Lambda):
             mask, inputs / keep_prob, jax.numpy.zeros_like(inputs)
         )
 
-    @jax.jit
+
     def call(self, params, inputs):
         if self.training_mode and self.rate > 0:
             self.seed = random.randint(1, 36)
