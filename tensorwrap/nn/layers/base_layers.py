@@ -20,8 +20,8 @@ class Layer(Module):
 
     _name_tracker: int = 1
 
-    def __init__(self, name: Optional[str] = "Layer") -> None:
-        super().__init__(name=name)
+    def __init__(self, name: Optional[str] = "Layer", *args, **kwargs) -> None:
+        super().__init__(name=name, *args, **kwargs)
 
     def add_weights(self, shape: Tuple[int, ...], key = PRNGKey(randint(1, 1000)), initializer:Initializer = GlorotNormal(), name = 'unnamed weight', trainable=True):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
@@ -36,8 +36,9 @@ class Layer(Module):
         weight = initializer(shape)
 
         # Adding to the trainable variables:
-        if trainable:
-            self.params[self.name][name] = weight
+        if not trainable:
+            self.__nontrainable_weights.append(name)
+        self.params[self.name][name] = weight
 
         return weight
 

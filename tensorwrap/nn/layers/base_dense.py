@@ -20,6 +20,7 @@ class Dense(Layer):
         - kernel_initializer (Optional, Initializer): An initializer class that initializes bias weight. Defaults to ``tensorwrap.nn.intializers.Zeros()``.
         - activation (Optional, str): A string that indicates the activation function to be applied before returning the output. Defaults to ``None``.
         - name (Optional, str): A string that indicates the name of the layer. Defaults to ``"Dense"``.
+        - trainable (Optional, bool): A boolean denoting whether the layer should be trainable or not.
     """
 
 
@@ -29,8 +30,12 @@ class Dense(Layer):
                  kernel_initializer: Optional[Initializer] = GlorotUniform(),
                  bias_initializer: Optional[Initializer] = Zeros(),
                  activation: Optional[str] = "None",
-                 name: Optional[str] = "Dense"):
-        super().__init__(name=name)
+                 name: Optional[str] = "Dense",
+                 *args,
+                 **kwargs):
+        super().__init__(name=name,
+                         *args,
+                         **kwargs)
         self.units = units
         self.use_bias = use_bias
         self.kernel_initializer = kernel_initializer

@@ -84,7 +84,9 @@ class Module(_Module):
     
     _name_tracker = defaultdict(int) # Automatically initializes the indices to 0.
 
-    def __init__(self, name: Optional[str] = "Module"):
+    def __init__(self, 
+                 name: Optional[str] = "Module",
+                 trainable: Optional[bool] = True):
         super().__init__()
 
         # Implicit Name tracking upon model creation. Replacing Tracker with name tracker with default dict eventually.
@@ -95,6 +97,10 @@ class Module(_Module):
         # Defining parameter handling:
         self.params = {self.name: {}}
         self.child_blocks = []
+        
+        # Trainable handling:
+        self.trainable = trainable
+        self.__nontrainable_weights = []
 
         # Implicit Variables:
         self._built = False
@@ -166,6 +172,12 @@ class Module(_Module):
         if not self._init:
             self.init(inputs)
             params = self.params
+        
+        for name in self.__nontrainable_weights:
+            params[self.name][name] = jax.lax.stop_gradient(params[self.name][name])
+            
+        if not self.trainable:
+            params[self.name] = jax.lax.stop_gradient(params[self.name])
         out = self.call(params[self.name], inputs, *args, **kwargs)
         return out
 

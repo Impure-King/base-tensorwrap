@@ -27,8 +27,11 @@ class Model(Module):
     NOTE: Recommended only for subclassing use.
     """
 
-    def __init__(self, name: str = "Model") -> None:
-        super().__init__(name=name) # Loads Module configurations
+    def __init__(self, name: str = "Model", *args, **kwargs) -> None:
+        super().__init__(name=name,
+                         *args,
+                         **kwargs) # Loads Module configurations
+    
     
     def predict(self, inputs: jax.Array) -> jax.Array:
         """Returns the predictions, when given inputs for the model.
@@ -71,8 +74,10 @@ class Model(Module):
 
 # Sequential models that create Forward-Feed Networks:
 class Sequential(Model):
-    def __init__(self, layers: list = list(), name="Sequential") -> None:
-        super().__init__(name=name)
+    def __init__(self, layers: list = list(), name="Sequential", *args, **kwargs) -> None:
+        super().__init__(name=name,
+                         *args,
+                         **kwargs)
         self.layers = layers
         for layer in self.layers:
             self.add_module_params(layer)

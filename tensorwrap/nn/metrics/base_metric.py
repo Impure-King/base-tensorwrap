@@ -14,5 +14,5 @@ class Metric(Module):
     @jax.jit
     def __call__(self, y_true, y_pred, *args, **kwargs):
         x = self.call(y_true, y_pred, *args, **kwargs)
-        self.state.append(x)
-        return jnp.mean(jnp.array(self.state))
+        # self.state.append(x)
+        return x

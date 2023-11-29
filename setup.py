@@ -26,7 +26,7 @@ install_requires = [
     "optax",
     "tensorflow-datasets",
     "termcolor",
-    "tensorflow"
+    "keras-core"
 ]
 
 tests_require = [

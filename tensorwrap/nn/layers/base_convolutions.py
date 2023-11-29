@@ -48,7 +48,9 @@ class ConvND(Layer):
                  bias_initializer: Initializer = Zeros(),
                  activation: str = 'relu',
                  groups=1,
-                 name: str = "Conv"):
+                 name: str = "Conv",
+                 *args,
+                 **kwargs):
         """Initializes a N-D Convolutional Layer that convolves the input.
         Arguments:
             - filter_no: The number of filters applied.
@@ -58,7 +60,9 @@ class ConvND(Layer):
             - name (Optional): Name of the layer.
         NOTE: Private Implementation of convolutions.
             """
-        super().__init__(name=name + str(rank) + "D")
+        super().__init__(name=name + str(rank) + "D",
+                         *args,
+                         **kwargs)
         self.rank = rank
         self.filter_no = filter_no
         self.filter_shape = filter_shape
