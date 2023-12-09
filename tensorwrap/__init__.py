@@ -8,9 +8,26 @@ version only supports prototyping and efficiency.
 """
 
 # JAX Built-ins:
-from jax import disable_jit, grad, value_and_grad, custom_gradient
-from jax import vmap as vectorized_map
+from jax import *
+
 from jax.numpy import *
+
+# Dealing with globals:
+global_list_deletion = ["array",
+                        "asarray", 
+                        "eye", 
+                        "arange", 
+                        "concatenate", 
+                        "vmap",
+                        "nn"]
+
+for i in global_list_deletion:
+    if i in globals():
+        del globals()[i]
+
+from jax import jit as function
+from jax import vmap as vectorized_map
+
 from jax.numpy import asarray as convert_to_tensor
 from jax.numpy import array as tensor
 from jax.numpy import eye as identity
@@ -23,7 +40,6 @@ from tensorwrap import nn
 # Fast Loading Modules:
 from tensorwrap import config, experimental
 from tensorwrap.experimental.serialize import load_model, save_model
-from tensorwrap.experimental.wrappers import function
 
 # Path Shortener:
 

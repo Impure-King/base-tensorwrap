@@ -36,11 +36,11 @@ class Dense(Layer):
         super().__init__(name=name,
                          *args,
                          **kwargs)
-        self.units = units
-        self.use_bias = use_bias
-        self.kernel_initializer = kernel_initializer
-        self.bias_initializer = bias_initializer
-        self.activation = Activation.get_activation(activation)
+        self.units:int = units
+        self.use_bias:bool = use_bias
+        self.kernel_initializer:Initializer = kernel_initializer
+        self.bias_initializer:Initializer = bias_initializer
+        self.activation:function = Activation.get_activation(activation)
 
         # Checking each argument:
         argument_list = [("units", units, int),
@@ -70,18 +70,17 @@ class Dense(Layer):
                              "Use `tensorwrap.nn.expand_dims(inputs, axis=1)` to increase input shape.")
 
         self.kernel = self.add_weights(shape=(input_shape[-1], self.units),
-                                       initializer=self.kernel_initializer,
-                                       name="kernel")
+                                       initializer=self.kernel_initializer)
+        
         if self.use_bias:
             self.bias = self.add_weights(shape=(self.units,),
-                                         initializer=self.bias_initializer,
-                                         name="bias")
+                                         initializer=self.bias_initializer)
             
-    def call(self, params: dict, inputs: jax.Array) -> jax.Array:
+    def call(self, inputs: jax.Array) -> jax.Array:
         if not self.use_bias:
-            x = inputs @ params['kernel']
+            x = inputs @ self.kernel
         else:
-            x = inputs @ params['kernel'] + params['bias']
+            x = inputs @ self.kernel + self.bias
         return self.activation(x)
 
 # PyTorch Implementation:
@@ -93,12 +92,10 @@ class Linear(Layer):
                  use_bias: bool = True,
                  kernel_initializer: Initializer = GlorotUniform(),
                  bias_initializer: Initializer = Zeros(),
-                 training_mode=False,
-                 name: str = "Layer",
+                 name: str = "Linear",
                  *args,
                  **kwargs) -> None:
-        super().__init__(training_mode=training_mode,
-                         name=name,
+        super().__init__(name=name,
                          *args,
                          **kwargs)
         self.in_shape = in_shape
@@ -106,25 +103,22 @@ class Linear(Layer):
         self.use_bias = use_bias
         self.kernel_initializer = kernel_initializer
         self.bias_initializer = bias_initializer
-        self.init(None)
     
     def build(self, inputs):
+        super().build()
         input_shape = self.in_shape
         self.kernel = self.add_weights(shape = (input_shape, self.out_shape),
-                                       initializer = self.kernel_initializer,
-                                       name = "kernel")
+                                       initializer = self.kernel_initializer)
         if self.use_bias:
             self.bias = self.add_weights(shape = (self.out_shape,),
-                                         initializer = self.bias_initializer,
-                                         name="bias")
+                                         initializer = self.bias_initializer)
 
 
-    @jax.jit
-    def call(self, params: dict, inputs: jax.Array) -> jax.Array:
+    def call(self, inputs: jax.Array) -> jax.Array:
         if not self.use_bias:
-            return inputs @ params['kernel']
+            return inputs @ self.kernel
         
-        x = inputs @ params['kernel'] + params['bias']
+        x = inputs @ self.kernel + self.bias
         return x
 
 Dense.__module__ = "tensorwrap.nn.layers"

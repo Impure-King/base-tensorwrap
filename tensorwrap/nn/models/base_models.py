@@ -38,6 +38,7 @@ class Model(Module):
         
         Arguments:
             - inputs: Proprocessed JAX arrays that can be used to calculate an output."""
+        self.__show_loading_animation(1, 1, None, None)
         return self.__call__(self.params, inputs)
     
     def evaluate(self, inputs: jax.Array, labels: jax.Array, loss_fn: Loss, metric_fn: Loss):
@@ -79,17 +80,14 @@ class Sequential(Model):
                          *args,
                          **kwargs)
         self.layers = layers
-        for layer in self.layers:
-            self.add_module_params(layer)
 
 
     def add(self, layer: Layer) -> None:
         self.layers.append(layer)
-        self.add_module_params(layer)
 
-    def call(self, params: dict, x: Array) -> Array:
+    def call(self, x: Array) -> Array:
         for layer in self.layers:
-            x = layer(params, x)
+            x = layer(x)
         return x
 
 

@@ -1,4 +1,4 @@
-from .base import (GlorotUniform,
+from .base_initializers import (GlorotUniform,
                    GlorotNormal,
                    Initializer,
                    Zeros)

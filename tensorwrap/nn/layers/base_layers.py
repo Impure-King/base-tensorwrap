@@ -1,15 +1,13 @@
 # Stable Modules:
-from random import randint
 from typing import Tuple, Optional
 
-import jax
 from jax.random import PRNGKey
 from jaxtyping import Array
 
 # Custom built Modules:
 
 from tensorwrap.module import Module
-from tensorwrap.nn.initializers import GlorotNormal, GlorotUniform, Initializer, Zeros
+from tensorwrap.nn.initializers import GlorotNormal, Initializer
 
 
 # Custom Trainable Layer
@@ -23,7 +21,7 @@ class Layer(Module):
     def __init__(self, name: Optional[str] = "Layer", *args, **kwargs) -> None:
         super().__init__(name=name, *args, **kwargs)
 
-    def add_weights(self, shape: Tuple[int, ...], key = PRNGKey(randint(1, 1000)), initializer:Initializer = GlorotNormal(), name = 'unnamed weight', trainable=True):
+    def add_weights(self, shape: Tuple[int, ...], initializer:Initializer = GlorotNormal()):
         """Useful method inherited from layers.Layer that adds weights that can be trained.
         ---------
         Arguments:
@@ -32,22 +30,8 @@ class Layer(Module):
             - name(Optional): The name of the weight. Defaults to "unnamed weight".
             - trainable (Optional) - Not required or implemented yet. 
         """
-        
-        weight = initializer(shape)
-
-        # Adding to the trainable variables:
-        if not trainable:
-            self.__nontrainable_weights.append(name)
-        self.params[self.name][name] = weight
-
+        weight:Array = initializer(shape)
         return weight
-
-    # Future idea to automize layer building.
-    # def compute_output_shape(self):
-    #     raise NotImplementedError("Method `compute_output_shape` has not been implemented.")
-
-    def get_weights(self, name):
-        return self._params[name]
  
 
 # Inspection Fixes:

@@ -16,17 +16,14 @@ class Activation(Module):
         the activation function.
     """
     
-    # Tracks Name with some id
-    __layer_tracker = 0
-    
-    def __init__(self, name: str = "Activation"):
+    def __init__(self, name: str = "Activation", *args, **kwargs):
         """
         Arguments:
             name (string, Optional): The name of the activation function. Defaults to "Activation".
         
         NOTE: Include ``super().__init__()``
         """
-        super().__init__(name=name)
+        super().__init__(name=name, *args, **kwargs)
 
     @classmethod
     def get_activation(self, name: str):
@@ -36,7 +33,7 @@ class Activation(Module):
         }
         return self.__activations[str(name).lower()]
 
-    def call(self, params, inputs):
+    def call(self, inputs):
         """
         This method should be overridden by subclasses to define the control flow
         of the activation function.
@@ -71,7 +68,9 @@ class ReLU(Activation):
                  max_value=None,
                  negative_slope=0,
                  threshold=0,
-                 name="ReLU"):
+                 name="ReLU",
+                 *args,
+                 **kwargs):
         """
         Arguments:
             max_value (int, optional): [description]. Defaults to None.
@@ -82,14 +81,14 @@ class ReLU(Activation):
         Raises:
             ValueError: [description]
         """
-        super().__init__(name=name)
+        super().__init__(name=name, *args, **kwargs)
         self.max_value = max_value
         self.slope = negative_slope
         self.threshold = threshold
         if self.max_value is not None and self.max_value < 0:
             raise ValueError("Max_value cannot be negative.")
 
-    def call(self, params, inputs):
+    def call(self, inputs):
         part1 = tf.maximum(0, inputs - self.threshold)
         if self.max_value is not None:
             return tf.minimum(part1, self.max_value)
