@@ -25,7 +25,7 @@ class Module(dict):
   # A name tracking dictionary.
   _name_tracker:dict = defaultdict(int)
   
-  def __init__(self, name="Module"):
+  def __init__(self, name="Module", dynamic=True):
     """Initiated a ``Module`` class object that can store trainable variables and operate on JAX transformations.
     Normally, it should be used as a subclass to register custom classes as pytrees and allow them to operate with
     JAX operations.
@@ -38,6 +38,7 @@ class Module(dict):
     self._training_mode:bool = True
     self.trainable:bool = True
     self.built:bool = False
+    self._init:bool = False
 
     # Managing Names:
     self.name:str = name + f":{Module._name_tracker[name]}"
@@ -46,7 +47,7 @@ class Module(dict):
   def __init_subclass__(cls) -> None:
     """Used to register all subclasses as PyTrees, upon definition."""
     register_pytree_node_class(cls)
-  
+
   def __getattr__(self, __key:str):
     """Manually customizing the ``__getattr__`` to allow for object oriented attribute query"""
     
@@ -205,7 +206,12 @@ class Module(dict):
   def trainable_weights(self):
     return self.filter_and_map(self.valid_trainable_filter)
 
-  
+
+  # Initiation:
+  def init(self, inputs, *args, **kwargs):
+    self._init = True  
+    with jax.disable_jit():
+      self.__call__(inputs, *args, **kwargs)
 
   # Nice Repr for presentation:
   def __repr__(self) -> str:
@@ -222,6 +228,7 @@ class Module(dict):
   def tree_values(self):
     return jax.tree_leaves(self)
 
+  @jax.jit
   def __call__(self, inputs):
     if not self.built:
       self.build(inputs)

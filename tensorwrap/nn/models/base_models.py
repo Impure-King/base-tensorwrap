@@ -4,12 +4,15 @@ from jax import numpy as jnp
 from jaxtyping import Array
 from termcolor import colored
 from typing import Any
+import optax
 
 # Custom built Modules:
 import tensorwrap as tw
 from tensorwrap.module import Module
 from tensorwrap.nn.layers.base_layers import Layer
 from tensorwrap.nn.losses.base import Loss
+from tensorwrap.experimental import Dataloader
+
 
 __all__ = ["Model", "Sequential"]
 
@@ -56,11 +59,59 @@ class Model(Module):
         loss = loss_fn(labels, pred)
         self.__show_loading_animation(1, 1, loss, metric)
     
+    def compile(
+            self,
+            loss:Loss,
+            optimizer,
+            metrics = None,
+            dynamic = False,
+    ):
+        self.loss_fn = loss
+        self.optimizer = optimizer
+        self.metrics = metrics or loss
+
+        # Initiating some states:
+        self.opt_state = optimizer.init(self)
+
+        # Creating a grad_fn
+        @jax.jit
+        @jax.grad
+        def grad_fn(model, inputs, outputs):
+            return loss(outputs, model(inputs))
+        
+        self.grad_fn = grad_fn
+        self.dynamic = dynamic
+
+    def train_step(self,
+                   X,
+                   y,
+                   opt_state):
+        grads = self.grad_fn(self, X, y)
+        updates, state = self.optimizer.update(grads, opt_state, self)
+        params = nn.
+
+    def fit(self,
+            x_train,
+            y_train,
+            epochs=1,
+            batch_size=32):
+        
+        if not self._init:
+            raise ValueError("Model not initialized. Please initialize the model with ``model.init``.")
+        
+        x_train_batched = Dataloader(x_train).batch(batch_size).shuffle(0)
+        y_train_batched = Dataloader(y_train).batch(batch_size).shuffle(0)
+        train_data = zip(x_train_batched, y_train_batched)
+
+        for epoch in range(1, epoch + 1):
+            for X, y in train_data:
+                
+
     def to(self, device_name: str):
         """Shifts the parameters and operations of the model to the suggested devices.
         Arguments:
             - device_name (str): A string that specifies device name."""
-        jax.tree_map(lambda x: tw.config.device_put(x, device_name), self.params)
+        jax.tree_map(lambda x: tw.config.device_put(x, device_name), self.weights)
 
     def __show_loading_animation(self, total_batches, current_batch, loss, metric):
         """Helper function that shows the loading animation, when training the model.
