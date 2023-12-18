@@ -5,20 +5,20 @@ from jax import jit
 __all__ = ["mse", "mae"]
 
 class MeanSquaredError(Loss):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, name="MeanSquaredError", *args, **kwargs) -> None:
+        super().__init__(name=name, *args, **kwargs)
         pass
 
-    @jit
+    
     def call(self, y_true, y_pred):
         return jnp.mean((y_true - y_pred)**2)
 
 class MeanAbsoluteError(Loss):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, name="MeanAbsoluteError", *args, **kwargs) -> None:
+        super().__init__(name=name, *args, **kwargs)
         pass
 
-    @jit
+    
     def call(self, y_true, y_pred):
         return jnp.mean(jnp.abs(y_true - y_pred))
 

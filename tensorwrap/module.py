@@ -229,11 +229,11 @@ class Module(dict):
     return jax.tree_leaves(self)
 
   @jax.jit
-  def __call__(self, inputs):
+  def __call__(self, inputs, *args, **kwargs):
     if not self.built:
       self.build(inputs)
 
-    return self.call(inputs)
+    return self.call(inputs, *args, **kwargs)
   
   
 

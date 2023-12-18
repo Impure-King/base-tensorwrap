@@ -71,11 +71,11 @@ class Model(Module):
         self.metrics = metrics or loss
 
         # Initiating some states:
-        self.opt_state = optimizer.init(self)
-
+        self.opt_state = optimizer.init(jax.tree_leaves(self))
+        print(type(loss))
         # Creating a grad_fn
         @jax.jit
-        @jax.grad
+        @jax.value_and_grad
         def grad_fn(model, inputs, outputs):
             return loss(outputs, model(inputs))
         
@@ -83,12 +83,14 @@ class Model(Module):
         self.dynamic = dynamic
 
     def train_step(self,
+                   flattened_model,
                    X,
                    y,
                    opt_state):
-        grads = self.grad_fn(self, X, y)
-        updates, state = self.optimizer.update(grads, opt_state, self)
-        params = nn.
+        loss, grads = self.grad_fn(flattened_model, X, y)
+        updates, state = self.optimizer.update(grads, opt_state)
+        params = optax.apply_updates(flattened_model, updates)
+        return params, state, loss
 
     def fit(self,
             x_train,
@@ -103,9 +105,11 @@ class Model(Module):
         y_train_batched = Dataloader(y_train).batch(batch_size).shuffle(0)
         train_data = zip(x_train_batched, y_train_batched)
 
-        for epoch in range(1, epoch + 1):
-            for X, y in train_data:
-                
+        for epoch in range(1, epochs + 1):
+            for index, (X, y) in enumerate(train_data):
+                params, self.opt_state, loss = self.train_step(jax.tree_leaves(self), X, y, self.opt_state)
+                self = jax.tree_unflatten(jax.tree_flatten(self)[1], params)
+                self.__show_loading_animation(self, index + 1, None, loss, None)
 
     def to(self, device_name: str):
         """Shifts the parameters and operations of the model to the suggested devices.
