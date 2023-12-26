@@ -59,6 +59,58 @@ class Model(Module):
         loss = loss_fn(labels, pred)
         self.__show_loading_animation(1, 1, loss, metric)
     
+    def compile(
+            self,
+            loss:Loss,
+            optimizer,
+            metrics = None,
+            dynamic = False,
+    ):
+        self.loss_fn = loss
+        self.optimizer = optimizer
+        self.metrics = metrics or loss
+
+        # Initiating some states:
+        self.opt_state = optimizer.init(jax.tree_leaves(self))
+        print(type(loss))
+        # Creating a grad_fn
+        @jax.jit
+        @jax.value_and_grad
+        def grad_fn(model, inputs, outputs):
+            return loss(outputs, model(inputs))
+        
+        self.grad_fn = grad_fn
+        self.dynamic = dynamic
+
+    def train_step(self,
+                   flattened_model,
+                   X,
+                   y,
+                   opt_state):
+        loss, grads = self.grad_fn(flattened_model, X, y)
+        updates, state = self.optimizer.update(grads, opt_state)
+        params = optax.apply_updates(flattened_model, updates)
+        return params, state, loss
+
+    def fit(self,
+            x_train,
+            y_train,
+            epochs=1,
+            batch_size=32):
+        
+        if not self._init:
+            raise ValueError("Model not initialized. Please initialize the model with ``model.init``.")
+        
+        x_train_batched = Dataloader(x_train).batch(batch_size).shuffle(0)
+        y_train_batched = Dataloader(y_train).batch(batch_size).shuffle(0)
+        train_data = zip(x_train_batched, y_train_batched)
+
+        for epoch in range(1, epochs + 1):
+            for index, (X, y) in enumerate(train_data):
+                params, self.opt_state, loss = self.train_step(jax.tree_leaves(self), X, y, self.opt_state)
+                self = jax.tree_unflatten(jax.tree_flatten(self)[1], params)
+                self.__show_loading_animation(self, index + 1, None, loss, None)
+
     def to(self, device_name: str):
         """Shifts the parameters and operations of the model to the suggested devices.
         Arguments:

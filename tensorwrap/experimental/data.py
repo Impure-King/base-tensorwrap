@@ -1,21 +1,12 @@
 import jax
 import random
-import jax.numpy as jnp
+import tensorwrap as tf
 from tensorwrap.module import Module
 
-@jax.vmap
-def from_tensor_slices(*args):
-    return jnp.array([*args])
 
 class Dataloader(Module):
     def __init__(self, data) -> None:
-        super().__init__()
-        self.data = data
-        self.data_length = self.data.shape[1]
-    
-    @staticmethod
-    def from_tensor_slices(*args):
-        return Dataloader(from_tensor_slices(*args))
+        self.data = jax.numpy.array(data)
     
     def batch(self, batch_size, drop_remainder=True, axis=0):
         
@@ -60,3 +51,42 @@ class Dataloader(Module):
     
     def len(self):
         return len(self.data)
+    
+
+class Dataset(Module):
+    def __init__(self) -> None:
+        pass
+    
+    @classmethod
+    def from_tensor_slices(self, data_slice) -> None:
+        if not isinstance(data_slice, tuple) and not isinstance(data_slice, list):
+            raise ValueError("Tensor slices must be a list or tuple for efficient processing.")
+
+        # Getting the length of the array.
+        self._no_arrays = len(data_slice)
+
+        for i in range(self._no_arrays):
+            setattr(self, str(i + 1), Dataloader(data_slice[i]))
+        
+        
+        
+    def batch(self, batch_size, drop_remainder = True, axis=0):
+        for i in range(self._no_arrays):
+            setattr(self, str(i + 1), self.__getattribute__(str(i + 1)).batch(batch_size, drop_remainder, axis))
+    
+    def map(self, function):
+        for i in range(self._no_arrays):
+            setattr(self, str(i + 1), self.__getattribute__(str(i + 1)).map(function))
+    
+    def shuffle(self, key = random.randint(1, 42), axis=0):
+        for i in range(self._no_arrays):
+            setattr(self, str(i + 1), self.__getattribute__(str(i + 1)).batch(key, axis))
+    
+
+    def __iter__(self):
+        self.full_data = []
+        
+        for i in range(self._no_arrays):
+            self.full_data.append(self.__getattribute__(str(i+1)))
+        
+        return zip(*self.full_data)
