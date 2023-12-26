@@ -1,11 +1,21 @@
 import jax
 import random
-import tensorwrap as tf
+import jax.numpy as jnp
 from tensorwrap.module import Module
+
+@jax.vmap
+def from_tensor_slices(*args):
+    return jnp.array([*args])
 
 class Dataloader(Module):
     def __init__(self, data) -> None:
-        self.data = jax.numpy.array(data)
+        super().__init__()
+        self.data = data
+        self.data_length = self.data.shape[1]
+    
+    @staticmethod
+    def from_tensor_slices(*args):
+        return Dataloader(from_tensor_slices(*args))
     
     def batch(self, batch_size, drop_remainder=True, axis=0):
         
@@ -33,7 +43,7 @@ class Dataloader(Module):
         new_data = jax.vmap(function)(self.data)
         return Dataloader(new_data)
     
-    def shuffle(self, axis=0, key=random.randint(1, 42)):
+    def shuffle(self, key=random.randint(1, 42), axis=0):
         new_data = jax.random.permutation(jax.random.PRNGKey(key), self.data, axis=axis)
         return Dataloader(new_data)
     
